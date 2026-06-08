@@ -1,0 +1,13 @@
+project:
+  name: anomaly-fault-detection-wireless
+  environment: development
+  random_seed: 42
+
+paths:
+  data_dir: data
+  reports_dir: reports
+  logs_dir: data/logs
+
+logging:
+  level: INFO
+  config_file: config/logging.yaml

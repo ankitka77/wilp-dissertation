@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Datasets
+data/
+
+# Pytest
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Large datasets
+data/logs/HDFS_v1/HDFS.log
