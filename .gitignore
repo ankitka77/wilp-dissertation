@@ -1,6 +1,7 @@
 # Python
 __pycache__/
 *.py[cod]
+*$py.class
 
 # Datasets
 data/
@@ -11,6 +12,7 @@ data/
 # Virtual environments
 .venv/
 venv/
+env/
 
 # Logs
 *.log
@@ -22,5 +24,5 @@ Thumbs.db
 # Jupyter
 .ipynb_checkpoints/
 
-# Large datasets
-data/logs/HDFS_v1/HDFS.log
+# VS Code
+.vscode/
