@@ -64,8 +64,8 @@ def main():
         train_df = load_result.train_df
         test_df = load_result.test_df
 
-        logger.info(f"✓ Training dataset: {len(train_df)} records")
-        logger.info(f"✓ Test dataset: {len(test_df)} records")
+        logger.info(f"[OK] Training dataset: {len(train_df)} records")
+        logger.info(f"[OK] Test dataset: {len(test_df)} records")
 
         # Step 2: Validate schemas
         logger.info("\n" + "=" * 70)
@@ -86,9 +86,9 @@ def main():
             logger.error(f"Errors: {test_validation.errors}")
             return False
 
-        logger.info("✓ Training dataset schema validation PASSED")
-        logger.info("✓ Test dataset schema validation PASSED")
-        logger.info(f"✓ KPI analysis: {len(kpi_analysis['train_kpi_ids'])} training KPI IDs, "
+        logger.info("[OK] Training dataset schema validation PASSED")
+        logger.info("[OK] Test dataset schema validation PASSED")
+        logger.info(f"[OK] KPI analysis: {len(kpi_analysis['train_kpi_ids'])} training KPI IDs, "
                     f"{len(kpi_analysis['test_kpi_ids'])} test KPI IDs")
 
         # Step 3: Generate validation report
@@ -98,7 +98,7 @@ def main():
 
         validation_report_path = Path(settings.paths.reports_dir) / "phase2" / "validation_report.txt"
         schema_validator.generate_validation_report(train_validation, test_validation, kpi_analysis, validation_report_path)
-        logger.info(f"✓ Validation report saved to {validation_report_path}")
+        logger.info(f"[OK] Validation report saved to {validation_report_path}")
 
         # Step 4: Generate profiling reports
         logger.info("\n" + "=" * 70)
@@ -106,7 +106,7 @@ def main():
         logger.info("=" * 70)
 
         dataset_profiler.save_all_reports(train_df, test_df)
-        logger.info("✓ All profiling reports generated:")
+        logger.info("[OK] All profiling reports generated:")
         logger.info(f"  - dataset_summary.csv")
         logger.info(f"  - descriptive_statistics.csv")
         logger.info(f"  - kpi_distribution.csv")
@@ -118,7 +118,7 @@ def main():
         logger.info("=" * 70)
 
         visualization_service.generate_all_plots(train_df, test_df)
-        logger.info("✓ All visualizations generated:")
+        logger.info("[OK] All visualizations generated:")
         logger.info(f"  - KPI ID distributions")
         logger.info(f"  - Anomaly distribution")
         logger.info(f"  - KPI value histograms")

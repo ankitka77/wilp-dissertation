@@ -1,0 +1,13 @@
+{
+    "total_records": 2476315,
+    "total_columns": 4,
+    "kpi_count": 26,
+    "anomaly_count": "53500",
+    "normal_count": "2422815",
+    "anomaly_percentage": 2.1604682764510974,
+    "class_imbalance": "Moderately Imbalanced",
+    "min_timestamp": "1970-01-01 00:00:01.467302400",
+    "max_timestamp": "1970-01-01 00:00:01.502446800",
+    "time_span": "0 days 00:00:00.035144400",
+    "unique_timestamps": 215030
+}

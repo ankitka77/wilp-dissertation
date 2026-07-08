@@ -1,0 +1,11 @@
+Metric,Training,Testing
+Number of Rows,2476315,2345211
+Number of Columns,4,3
+Number of KPI IDs,26,26
+Number of Anomalies,53500,N/A (No labels)
+Number of Normal Records,2422815,N/A (No labels)
+Anomaly Percentage (%),2.16,N/A (No labels)
+Class Imbalance,Moderately Imbalanced,N/A (No labels)
+Min Timestamp,1970-01-01 00:00:01.467302400,1970-01-01 00:00:01.470990900
+Max Timestamp,1970-01-01 00:00:01.502446800,1970-01-01 00:00:01.509383340
+Time Span,0 days 00:00:00.035144400,0 days 00:00:00.038392440

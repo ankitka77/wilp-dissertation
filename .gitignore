@@ -17,6 +17,9 @@ env/
 # Logs
 *.log
 
+# Local environment files
+.env
+
 # OS files
 .DS_Store
 Thumbs.db

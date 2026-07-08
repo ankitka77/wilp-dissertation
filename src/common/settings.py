@@ -42,6 +42,7 @@ class AppSettings(BaseModel):
 
 
 DEFAULT_CONFIG_FILE = Path("config/settings.yaml")
+DEFAULT_DOTENV_FILE = Path(".env")
 
 
 def _read_yaml(path: Path) -> dict[str, Any]:
@@ -54,6 +55,30 @@ def _read_yaml(path: Path) -> dict[str, Any]:
     return loaded
 
 
+def _load_dotenv_file(path: Path = DEFAULT_DOTENV_FILE) -> None:
+    """Load simple KEY=VALUE pairs from a local .env file if present.
+
+    This keeps the project dependency-free while still allowing a convenient
+    local override file for environment settings.
+    """
+
+    if not path.exists():
+        return
+
+    with path.open("r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip("'").strip('"')
+
+            if key and key not in os.environ:
+                os.environ[key] = value
+
+
 def load_settings(config_path: str | Path | None = None) -> AppSettings:
     """Load validated settings from YAML and environment overrides.
 
@@ -62,6 +87,8 @@ def load_settings(config_path: str | Path | None = None) -> AppSettings:
     - WILP_RANDOM_SEED
     - WILP_LOG_LEVEL
     """
+
+    _load_dotenv_file()
 
     cfg_path = Path(config_path) if config_path else DEFAULT_CONFIG_FILE
     data = _read_yaml(cfg_path)
