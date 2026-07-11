@@ -33,12 +33,24 @@ class LoggingSettings(BaseModel):
     config_file: str = "config/logging.yaml"
 
 
+class FeatureEngineeringSettings(BaseModel):
+    """Configuration for KPI feature engineering."""
+
+    lag_values: list[int] = Field(default_factory=lambda: [1, 3, 5, 10])
+    rolling_windows: list[int] = Field(default_factory=lambda: [5, 10, 20])
+    ema_periods: list[int] = Field(default_factory=lambda: [5, 10, 20])
+    normalize: bool = False
+    missing_strategy: str = "forward_fill"
+    include_timestamp_features: bool = True
+
+
 class AppSettings(BaseModel):
     """Top-level validated settings model."""
 
     project: ProjectSettings = Field(default_factory=ProjectSettings)
     paths: PathSettings = Field(default_factory=PathSettings)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
+    feature_engineering: FeatureEngineeringSettings = Field(default_factory=FeatureEngineeringSettings)
 
 
 DEFAULT_CONFIG_FILE = Path("config/settings.yaml")
@@ -56,11 +68,7 @@ def _read_yaml(path: Path) -> dict[str, Any]:
 
 
 def _load_dotenv_file(path: Path = DEFAULT_DOTENV_FILE) -> None:
-    """Load simple KEY=VALUE pairs from a local .env file if present.
-
-    This keeps the project dependency-free while still allowing a convenient
-    local override file for environment settings.
-    """
+    """Load simple KEY=VALUE pairs from a local .env file if present."""
 
     if not path.exists():
         return
@@ -80,13 +88,7 @@ def _load_dotenv_file(path: Path = DEFAULT_DOTENV_FILE) -> None:
 
 
 def load_settings(config_path: str | Path | None = None) -> AppSettings:
-    """Load validated settings from YAML and environment overrides.
-
-    Environment variables are optional and follow:
-    - WILP_ENVIRONMENT
-    - WILP_RANDOM_SEED
-    - WILP_LOG_LEVEL
-    """
+    """Load validated settings from YAML and environment overrides."""
 
     _load_dotenv_file()
 

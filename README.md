@@ -1,75 +1,320 @@
-# Anomaly and Fault Detection in Wireless System
+# Anomaly and Fault Detection in Wireless Systems
 
-## Overview
+## Project Overview
 
-This project is being developed as part of the M.Tech (AI/ML) program at BITS Pilani.
-
-The objective is to develop a machine-learning framework for anomaly and fault detection in wireless systems by combining:
+This project is part of an M.Tech (AI/ML) dissertation at BITS Pilani. The goal is to build a machine-learning framework for anomaly and fault detection in wireless systems using:
 
 - KPI-based anomaly detection
 - Log-based anomaly detection
+- Later-stage fusion of KPI and log signals
 
-The project focuses on telecom Operations and Maintenance (O&M) use cases.
+The project currently has Phase 2 implemented and working end to end for KPI dataset analysis.
 
-## Phase 1 Status
+## Current Status
 
-Current phase implemented: Project Setup
+Implemented and working now:
 
-Implemented in this phase:
+- Project configuration and logging setup
+- KPI training/test data loading
+- KPI schema validation
+- KPI dataset profiling and report generation
+- Exploratory plot generation
+- A simple weighted fusion scaffold
+- Basic evaluation utilities
+- Unit tests for the implemented functionality
 
-- Project package structure under src
-- Logging configuration framework
-- Configuration management framework
-- Unit test framework with pytest
-- Skeleton modules for preprocessing, KPI model, log model, fusion, evaluation, and visualization
+Phase-level status:
 
-## Project Structure
+- Phase 1: Project setup completed
+- Phase 2: KPI dataset analysis completed and runnable
+- Later phases: preprocessing, KPI modeling, log modeling, fusion expansion, and evaluation remain scaffolded or partially planned
 
-Key source directories:
+## How To Run
 
-- src/preprocessing
-- src/kpi_model
-- src/log_model
-- src/fusion
-- src/evaluation
-- src/visualization
-- src/common
+Install dependencies:
 
-Configuration:
+```powershell
+python -m pip install -r requirements.txt
+```
 
-- config/settings.yaml
-- config/logging.yaml
+Run tests:
 
-Tests:
+```powershell
+pytest -q
+```
 
-- tests/unit
+Run the current Phase 2 pipeline:
 
-## Environment Setup
+```powershell
+python phase2_analysis.py
+```
 
-1. Create and activate a virtual environment.
-2. Install dependencies:
+Run the Phase 3 feature engineering pipeline:
 
-	python -m pip install -r requirements.txt
+```powershell
+python phase3_feature_engineering.py
+```
 
-3. Run tests:
+Phase 3 outputs are written to:
 
-	pytest
+- data/processed/kpi_features_train.csv
+- data/processed/kpi_features_test.csv
+- reports/phase3/feature_summary.csv
+- reports/phase3/feature_statistics.csv
+- reports/phase3/feature_correlation.csv
+- reports/phase3/plots/
 
-## Documentation
+## Data Placement
 
-Refer to:
+Place your datasets exactly here:
 
-- docs/PMS.md
-- docs/Datasets.md
-- docs/Architecture.md
-- docs/Literature_Review.md
-- docs/Development_Roadmap.md
+- Training data: `data/kpi/train.csv`
+- Test data: `data/kpi/test.csv`
+
+Important notes:
+
+- The filenames must be exactly `train.csv` and `test.csv`
+- The pipeline reads them relative to the repository root
+- The current loader expects the KPI files under `data/kpi`
+
+Expected column layout:
+
+- Training data: `timestamp`, `value`, `label`, `KPI ID`
+- Test data: `timestamp`, `value`, `KPI ID`
+
+## Output Locations
+
+When you run `phase2_analysis.py`, the generated artifacts are written to:
+
+- `reports/phase2/validation_report.txt`
+- `reports/phase2/dataset_summary.csv`
+- `reports/phase2/dataset_summary.json`
+- `reports/phase2/descriptive_statistics.csv`
+- `reports/phase2/kpi_distribution.csv`
+- `reports/phase2/anomaly_distribution.csv`
+- `reports/phase2/timestamp_analysis.csv`
+- `reports/phase2/plots/`
+
+## Repository Layout
+
+```text
+wilp-dissertation/
+├── .env
+├── .gitignore
+├── README.md
+├── phase2_analysis.py
+├── pytest.ini
+├── requirements-dev.txt
+├── requirements.txt
+├── config/
+│   ├── logging.yaml
+│   └── settings.yaml
+├── data/
+│   ├── kpi/
+│   │   ├── train.csv
+│   │   └── test.csv
+│   └── logs/
+├── docs/
+├── notebooks/
+├── papers/
+├── reports/
+│   └── phase2/
+│       ├── plots/
+│       ├── anomaly_distribution.csv
+│       ├── dataset_summary.csv
+│       ├── dataset_summary.json
+│       ├── descriptive_statistics.csv
+│       ├── kpi_distribution.csv
+│       ├── timestamp_analysis.csv
+│       └── validation_report.txt
+├── src/
+│   ├── __init__.py
+│   ├── common/
+│   │   ├── __init__.py
+│   │   ├── logging_utils.py
+│   │   └── settings.py
+│   ├── data/
+│   │   ├── __init__.py
+│   │   ├── data_loader.py
+│   │   ├── dataset_profiler.py
+│   │   └── schema_validator.py
+│   ├── evaluation/
+│   │   ├── __init__.py
+│   │   └── metrics.py
+│   ├── fusion/
+│   │   ├── __init__.py
+│   │   └── fusion_engine.py
+│   ├── kpi_model/
+│   │   ├── __init__.py
+│   │   └── model.py
+│   ├── log_model/
+│   │   ├── __init__.py
+│   │   └── model.py
+│   ├── preprocessing/
+│   │   ├── __init__.py
+│   │   └── pipeline.py
+│   └── visualization/
+│       ├── __init__.py
+│       └── plotter.py
+└── tests/
+    ├── conftest.py
+    └── unit/
+        ├── test_phase2_kpi_analysis.py
+        └── test_project_setup.py
+```
+
+### Root Directory
+
+The root contains project-wide entry points and configuration:
+
+- `phase2_analysis.py`: Main script that runs the full Phase 2 workflow
+- `requirements.txt`: Runtime dependencies
+- `requirements-dev.txt`: Extra development dependencies
+- `pytest.ini`: Pytest configuration
+- `.env`: Local environment overrides for development
+- `README.md`: Project overview and usage guide
+- `PHASE2_*.md`: Phase 2 delivery, implementation, checklist, summary, and quick reference documents
+
+### `config/`
+
+Project configuration files.
+
+- `settings.yaml`: Main project settings such as project name, environment, and base paths
+- `logging.yaml`: Logging configuration used by the application logger
+
+### `data/`
+
+Project data storage.
+
+- `data/kpi/`: Input KPI datasets used by the current pipeline
+- `data/logs/`: Log output directory used by the configured logger
+
+### `reports/`
+
+Generated analysis outputs.
+
+- `reports/phase2/`: Phase 2 analysis artifacts
+- `reports/phase2/plots/`: Saved PNG plots generated by the visualization module
+
+### `docs/`
+
+Reference documentation and project notes.
+
+Typical contents here include:
+
+- Architecture notes
+- Dataset documentation
+- Literature review material
+- Development roadmap documents
+
+### `notebooks/`
+
+Interactive notebooks for experiments, analysis, or prototype work.
+
+### `papers/`
+
+Research papers, references, and supporting academic material used for the dissertation.
+
+### `src/`
+
+Main Python source code.
+
+#### `src/common/`
+
+Shared utilities used across the project.
+
+- `settings.py`: Loads YAML settings and optional environment overrides from `.env`
+- `logging_utils.py`: Configures the project logger from `config/logging.yaml`
+- `__init__.py`: Marks the directory as a package
+
+#### `src/data/`
+
+KPI dataset loading, validation, and profiling logic.
+
+- `data_loader.py`: Loads `train.csv` and `test.csv` from `data/kpi`, parses timestamps, and returns both datasets
+- `schema_validator.py`: Validates required columns, data types, KPI IDs, missing values, duplicates, and validation reports
+- `dataset_profiler.py`: Produces dataset summary statistics, descriptive stats, KPI-level analysis, anomaly distribution, and timestamp analysis
+- `__init__.py`: Marks the directory as a package
+
+#### `src/preprocessing/`
+
+Preprocessing scaffolding for later phases.
+
+- `pipeline.py`: Placeholder for KPI and log preprocessing workflows
+- `__init__.py`: Package marker
+
+#### `src/kpi_model/`
+
+KPI anomaly detection model scaffolding.
+
+- `model.py`: Base KPI anomaly model interface with `fit` and `predict` placeholders
+- `__init__.py`: Package marker
+
+#### `src/log_model/`
+
+Log anomaly detection model scaffolding.
+
+- `model.py`: Base log anomaly model interface with `fit` and `predict` placeholders
+- `__init__.py`: Package marker
+
+#### `src/fusion/`
+
+Fusion logic that combines KPI and log signals.
+
+- `fusion_engine.py`: Defines the base fusion interface and a simple `WeightedFusionEngine`
+- `__init__.py`: Exports the fusion engine classes
+
+#### `src/evaluation/`
+
+Evaluation utilities for anomaly detection results.
+
+- `metrics.py`: Wraps standard classification metrics such as accuracy, precision, recall, F1, and ROC-AUC
+- `__init__.py`: Exports the evaluation service
+
+#### `src/visualization/`
+
+Plot generation for dataset exploration.
+
+- `plotter.py`: Creates KPI distribution plots, anomaly plots, histograms, boxplots, and per-KPI value distribution plots
+- `__init__.py`: Package marker
+
+### `tests/`
+
+Automated tests.
+
+- `tests/unit/test_project_setup.py`: Smoke tests for configuration, logging, and fusion setup
+- `tests/unit/test_phase2_kpi_analysis.py`: Unit tests for data loading, schema validation, dataset profiling, and report generation
+- `tests/conftest.py`: Shared pytest fixtures and test setup
+
+## Configuration Notes
+
+The project uses YAML configuration files and a small optional `.env` file.
+
+- `config/settings.yaml` is the main settings file
+- `config/logging.yaml` controls logging behavior
+- `.env` can override runtime values such as:
+  - `WILP_ENVIRONMENT`
+  - `WILP_RANDOM_SEED`
+  - `WILP_LOG_LEVEL`
+
+## Notes On The Current Pipeline
+
+The Phase 2 runner performs the following steps:
+
+1. Loads KPI train/test CSV files
+2. Validates dataset schema
+3. Generates a validation report
+4. Generates profiling CSV/JSON outputs
+5. Generates visualizations into `reports/phase2/plots`
+
+The current implementation is now runnable on Windows and uses a headless plotting backend so the pipeline can complete without a GUI Tk installation.
 
 ## Technology Stack
 
 - Python
 - Pandas
 - NumPy
+- SciPy
 - Scikit-Learn
 - TensorFlow/Keras
 - Matplotlib

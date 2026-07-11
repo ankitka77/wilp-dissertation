@@ -1,8 +1,4 @@
-"""Visualization module for KPI dataset analysis (Phase 2).
-
-This module provides functionality to generate exploratory visualizations
-for KPI datasets.
-"""
+"""Visualization module for KPI dataset analysis and feature engineering."""
 
 from __future__ import annotations
 
@@ -19,37 +15,19 @@ logger = logging.getLogger("project")
 
 
 class VisualizationService:
-    """Generate exploratory visualizations for KPI datasets.
-
-    This class creates:
-    - KPI ID distribution plots
-    - Anomaly distribution plots
-    - KPI value histograms
-    - KPI value boxplots
-    - KPI value distribution by KPI ID
-    """
+    """Generate exploratory visualizations for KPI datasets."""
 
     def __init__(self, output_dir: str | Path = "reports/phase2/plots"):
-        """Initialize VisualizationService.
-
-        Args:
-            output_dir: Directory to save visualization plots. Defaults to "reports/phase2/plots".
-        """
+        """Initialize VisualizationService."""
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        logger.info(f"VisualizationService initialized with output dir: {self.output_dir}")
+        logger.info("VisualizationService initialized with output dir: %s", self.output_dir)
 
     def plot_kpi_id_distribution(self, df: pd.DataFrame, dataset_type: str = "training") -> None:
-        """Plot distribution of records across KPI IDs.
-
-        Args:
-            df: DataFrame to analyze.
-            dataset_type: Label for dataset (e.g., "training" or "testing").
-        """
-        logger.info(f"Generating KPI ID distribution plot for {dataset_type} data")
+        """Plot distribution of records across KPI IDs."""
+        logger.info("Generating KPI ID distribution plot for %s data", dataset_type)
 
         plt.figure(figsize=(12, 6))
-
         kpi_counts = df["KPI ID"].value_counts().sort_index()
         kpi_counts.plot(kind="bar", color="steelblue", edgecolor="black", alpha=0.7)
 
@@ -64,14 +42,10 @@ class VisualizationService:
         plt.savefig(output_path, dpi=300, bbox_inches="tight")
         plt.close()
 
-        logger.info(f"KPI ID distribution plot saved to {output_path}")
+        logger.info("KPI ID distribution plot saved to %s", output_path)
 
     def plot_anomaly_distribution(self, df: pd.DataFrame) -> None:
-        """Plot distribution of anomalies vs normal records.
-
-        Args:
-            df: Training DataFrame with labels.
-        """
+        """Plot distribution of anomalies vs normal records."""
         logger.info("Generating anomaly distribution plot")
 
         if "label" not in df.columns:
@@ -79,13 +53,12 @@ class VisualizationService:
             return
 
         plt.figure(figsize=(8, 6))
-
         anomaly_counts = df["label"].value_counts()
         labels_map = {0: "Normal", 1: "Anomaly"}
         labels = [labels_map.get(idx, str(idx)) for idx in anomaly_counts.index]
 
         colors = ["green", "red"]
-        anomaly_counts.plot(kind="bar", color=colors[:len(anomaly_counts)], edgecolor="black", alpha=0.7)
+        anomaly_counts.plot(kind="bar", color=colors[: len(anomaly_counts)], edgecolor="black", alpha=0.7)
 
         plt.title("Anomaly Distribution (Training Dataset)", fontsize=14, fontweight="bold")
         plt.xlabel("Category", fontsize=12)
@@ -98,19 +71,13 @@ class VisualizationService:
         plt.savefig(output_path, dpi=300, bbox_inches="tight")
         plt.close()
 
-        logger.info(f"Anomaly distribution plot saved to {output_path}")
+        logger.info("Anomaly distribution plot saved to %s", output_path)
 
     def plot_kpi_value_histogram(self, df: pd.DataFrame, dataset_type: str = "training") -> None:
-        """Plot histogram of KPI values.
-
-        Args:
-            df: DataFrame to analyze.
-            dataset_type: Label for dataset (e.g., "training" or "testing").
-        """
-        logger.info(f"Generating KPI value histogram for {dataset_type} data")
+        """Plot histogram of KPI values."""
+        logger.info("Generating KPI value histogram for %s data", dataset_type)
 
         plt.figure(figsize=(10, 6))
-
         plt.hist(df["value"], bins=50, color="steelblue", edgecolor="black", alpha=0.7)
 
         plt.title(f"KPI Value Distribution ({dataset_type.capitalize()} Dataset)", fontsize=14, fontweight="bold")
@@ -123,19 +90,13 @@ class VisualizationService:
         plt.savefig(output_path, dpi=300, bbox_inches="tight")
         plt.close()
 
-        logger.info(f"KPI value histogram saved to {output_path}")
+        logger.info("KPI value histogram saved to %s", output_path)
 
     def plot_kpi_value_boxplot(self, df: pd.DataFrame, dataset_type: str = "training") -> None:
-        """Plot boxplot of KPI values.
-
-        Args:
-            df: DataFrame to analyze.
-            dataset_type: Label for dataset (e.g., "training" or "testing").
-        """
-        logger.info(f"Generating KPI value boxplot for {dataset_type} data")
+        """Plot boxplot of KPI values."""
+        logger.info("Generating KPI value boxplot for %s data", dataset_type)
 
         plt.figure(figsize=(10, 6))
-
         plt.boxplot(df["value"], vert=True, patch_artist=True, widths=0.5)
 
         plt.title(f"KPI Value Boxplot ({dataset_type.capitalize()} Dataset)", fontsize=14, fontweight="bold")
@@ -147,23 +108,14 @@ class VisualizationService:
         plt.savefig(output_path, dpi=300, bbox_inches="tight")
         plt.close()
 
-        logger.info(f"KPI value boxplot saved to {output_path}")
+        logger.info("KPI value boxplot saved to %s", output_path)
 
     def plot_kpi_value_distribution_by_id(self, df: pd.DataFrame, dataset_type: str = "training") -> None:
-        """Plot KPI value distribution by KPI ID (boxplot).
-
-        Args:
-            df: DataFrame to analyze.
-            dataset_type: Label for dataset (e.g., "training" or "testing").
-        """
-        logger.info(f"Generating KPI value distribution by ID plot for {dataset_type} data")
+        """Plot KPI value distribution by KPI ID (boxplot)."""
+        logger.info("Generating KPI value distribution by ID plot for %s data", dataset_type)
 
         plt.figure(figsize=(14, 6))
-
-        # Get KPI IDs sorted
         kpi_ids = sorted(df["KPI ID"].unique())
-
-        # Prepare data for boxplot
         data_by_kpi = [df[df["KPI ID"] == kpi_id]["value"].values for kpi_id in kpi_ids]
 
         plt.boxplot(data_by_kpi, labels=kpi_ids, patch_artist=True)
@@ -179,7 +131,98 @@ class VisualizationService:
         plt.savefig(output_path, dpi=300, bbox_inches="tight")
         plt.close()
 
-        logger.info(f"KPI value distribution by ID plot saved to {output_path}")
+        logger.info("KPI value distribution by ID plot saved to %s", output_path)
+
+    def plot_feature_correlation(self, features: pd.DataFrame) -> None:
+        """Plot a correlation heatmap for engineered numeric features."""
+        numeric_columns = [
+            column
+            for column in features.columns
+            if column not in {"timestamp", "KPI ID", "label"} and pd.api.types.is_numeric_dtype(features[column])
+        ]
+        if len(numeric_columns) < 2:
+            logger.warning("Not enough numeric features for correlation plotting")
+            return
+
+        correlation_matrix = features[numeric_columns].corr(numeric_only=True)
+        plt.figure(figsize=(14, 10))
+        plt.imshow(correlation_matrix, cmap="coolwarm", interpolation="nearest")
+        plt.colorbar()
+        plt.xticks(range(len(numeric_columns)), numeric_columns, rotation=45, ha="right")
+        plt.yticks(range(len(numeric_columns)), numeric_columns)
+        plt.title("Feature Correlation Heatmap")
+        plt.tight_layout()
+
+        output_path = self.output_dir / "06_feature_correlation_heatmap.png"
+        plt.savefig(output_path, dpi=300, bbox_inches="tight")
+        plt.close()
+
+        logger.info("Feature correlation heatmap saved to %s", output_path)
+
+    def plot_feature_distributions(self, features: pd.DataFrame) -> None:
+        """Plot distributions for the most informative engineered features."""
+        numeric_columns = [
+            column
+            for column in features.columns
+            if column not in {"timestamp", "KPI ID", "label"} and pd.api.types.is_numeric_dtype(features[column])
+        ]
+        if not numeric_columns:
+            logger.warning("No numeric features available for distribution plotting")
+            return
+
+        plot_columns = numeric_columns[:6]
+        fig, axes = plt.subplots(nrows=2, ncols=3, figsize=(15, 10))
+        axes = axes.flatten()
+
+        for axis, column in zip(axes, plot_columns):
+            axis.hist(features[column].dropna(), bins=30, color="steelblue", alpha=0.7)
+            axis.set_title(column)
+            axis.set_xlabel("Value")
+            axis.set_ylabel("Frequency")
+
+        for axis in axes[len(plot_columns):]:
+            axis.axis("off")
+
+        plt.tight_layout()
+        output_path = self.output_dir / "07_feature_distributions.png"
+        plt.savefig(output_path, dpi=300, bbox_inches="tight")
+        plt.close()
+
+        logger.info("Feature distributions saved to %s", output_path)
+
+    def plot_rolling_mean_example(self, features: pd.DataFrame) -> None:
+        """Plot a rolling mean example for the first KPI stream."""
+        rolling_column = next((column for column in features.columns if column.startswith("rolling_mean_")), None)
+        if rolling_column is None:
+            logger.warning("Rolling mean feature not found; skipping rolling mean example plot")
+            return
+
+        first_kpi = features["KPI ID"].dropna().iloc[0]
+        subset = features[features["KPI ID"] == first_kpi].head(80)
+        if subset.empty:
+            return
+
+        plt.figure(figsize=(12, 6))
+        plt.plot(subset["value"], label="value", color="black", alpha=0.6)
+        plt.plot(subset[rolling_column], label=rolling_column, color="tab:red", linewidth=2)
+        plt.title(f"Rolling Mean Example for {first_kpi}")
+        plt.xlabel("Sample")
+        plt.ylabel("Value")
+        plt.legend()
+        plt.grid(alpha=0.3)
+        plt.tight_layout()
+
+        output_path = self.output_dir / "08_rolling_mean_example.png"
+        plt.savefig(output_path, dpi=300, bbox_inches="tight")
+        plt.close()
+
+        logger.info("Rolling mean example saved to %s", output_path)
+
+    def generate_phase3_plots(self, features: pd.DataFrame) -> None:
+        """Generate feature-engineering plots for Phase 3."""
+        self.plot_feature_correlation(features)
+        self.plot_feature_distributions(features)
+        self.plot_rolling_mean_example(features)
 
     def plot_kpi_series(self, frame: pd.DataFrame, value_col: str = "value") -> None:
         """Plot KPI series with anomaly overlays in later phases."""
@@ -190,25 +233,17 @@ class VisualizationService:
         raise NotImplementedError("Phase 4+ will add model comparison plots.")
 
     def generate_all_plots(self, train_df: pd.DataFrame, test_df: pd.DataFrame | None = None) -> None:
-        """Generate all exploratory plots.
-
-        Args:
-            train_df: Training DataFrame.
-            test_df: Optional test DataFrame.
-        """
+        """Generate all exploratory plots."""
         logger.info("Generating all exploratory plots")
 
-        # Training plots
         self.plot_kpi_id_distribution(train_df, "training")
         self.plot_kpi_value_histogram(train_df, "training")
         self.plot_kpi_value_boxplot(train_df, "training")
         self.plot_kpi_value_distribution_by_id(train_df, "training")
 
-        # Anomaly distribution (training only as test has no labels)
         if "label" in train_df.columns:
             self.plot_anomaly_distribution(train_df)
 
-        # Test plots if provided
         if test_df is not None:
             self.plot_kpi_id_distribution(test_df, "testing")
             self.plot_kpi_value_histogram(test_df, "testing")

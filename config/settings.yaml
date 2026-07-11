@@ -11,3 +11,11 @@ paths:
 logging:
   level: INFO
   config_file: config/logging.yaml
+
+feature_engineering:
+  lag_values: [1, 3, 5, 10]
+  rolling_windows: [5, 10, 20]
+  ema_periods: [5, 10, 20]
+  normalize: false
+  missing_strategy: forward_fill
+  include_timestamp_features: true
