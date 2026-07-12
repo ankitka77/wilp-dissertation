@@ -43,8 +43,10 @@ def main():
         logger.info("\nInitializing components...")
         data_loader = DataLoader(settings.paths.data_dir + "/kpi")
         schema_validator = SchemaValidator()
-        dataset_profiler = DatasetProfiler(settings.paths.reports_dir + "/phase2")
-        visualization_service = VisualizationService(settings.paths.reports_dir + "/phase2/plots")
+        report_dir = settings.artifacts.phase_report_dir("phase2")
+        plot_dir = Path(settings.artifacts.plots_root)
+        dataset_profiler = DatasetProfiler(report_dir)
+        visualization_service = VisualizationService(plot_dir)
 
         # Step 1: Load datasets
         logger.info("\n" + "=" * 70)
@@ -96,7 +98,7 @@ def main():
         logger.info("STEP 3: Generating Validation Report")
         logger.info("=" * 70)
 
-        validation_report_path = Path(settings.paths.reports_dir) / "phase2" / "validation_report.txt"
+        validation_report_path = report_dir / "validation_report.txt"
         schema_validator.generate_validation_report(train_validation, test_validation, kpi_analysis, validation_report_path)
         logger.info(f"[OK] Validation report saved to {validation_report_path}")
 

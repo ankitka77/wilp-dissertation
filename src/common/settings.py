@@ -22,7 +22,6 @@ class PathSettings(BaseModel):
     """Relative paths used by pipelines and reports."""
 
     data_dir: str = "data"
-    reports_dir: str = "reports"
     logs_dir: str = "data/logs"
 
 
@@ -31,6 +30,20 @@ class LoggingSettings(BaseModel):
 
     level: str = "INFO"
     config_file: str = "config/logging.yaml"
+
+
+class ArtifactSettings(BaseModel):
+    """Centralized runtime artifact configuration for all phases."""
+
+    root: str = "artifacts"
+    reports_root: str = "artifacts/reports"
+    models_root: str = "artifacts/models"
+    experiments_root: str = "artifacts/experiments"
+    plots_root: str = "artifacts/plots"
+
+    def phase_report_dir(self, phase_name: str) -> Path:
+        """Return the report directory for a specific phase."""
+        return Path(self.reports_root) / phase_name
 
 
 class FeatureEngineeringSettings(BaseModel):
@@ -44,13 +57,29 @@ class FeatureEngineeringSettings(BaseModel):
     include_timestamp_features: bool = True
 
 
+class Phase4Settings(BaseModel):
+    """Configuration for Phase 4 anomaly detection."""
+
+    n_estimators: int = 100
+    contamination: float = 0.05
+    max_samples: str | int = "auto"
+    bootstrap: bool = False
+    random_state: int = 42
+    dataset_version: str = "phase3"
+    git_branch: str = "local"
+    git_commit: str = "unknown"
+    git_tag: str | None = None
+
+
 class AppSettings(BaseModel):
     """Top-level validated settings model."""
 
     project: ProjectSettings = Field(default_factory=ProjectSettings)
     paths: PathSettings = Field(default_factory=PathSettings)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
+    artifacts: ArtifactSettings = Field(default_factory=ArtifactSettings)
     feature_engineering: FeatureEngineeringSettings = Field(default_factory=FeatureEngineeringSettings)
+    phase4: Phase4Settings = Field(default_factory=Phase4Settings)
 
 
 DEFAULT_CONFIG_FILE = Path("config/settings.yaml")

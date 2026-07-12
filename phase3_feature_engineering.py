@@ -46,7 +46,7 @@ def main() -> bool:
         train_features = pipeline.fit_transform_kpi(load_result.train_df)
         test_features = pipeline.transform_kpi(load_result.test_df)
 
-        output_dir = Path(settings.paths.reports_dir) / "phase3"
+        output_dir = settings.artifacts.phase_report_dir("phase3")
         output_dir.mkdir(parents=True, exist_ok=True)
         processed_dir = Path(settings.paths.data_dir) / "processed"
         processed_dir.mkdir(parents=True, exist_ok=True)
@@ -60,7 +60,7 @@ def main() -> bool:
         engineer.generate_feature_reports(train_features, output_dir)
         logger.info("Generated feature reports in %s", output_dir)
 
-        visualization_service = VisualizationService(output_dir / "plots")
+        visualization_service = VisualizationService(Path(settings.artifacts.plots_root))
         visualization_service.generate_phase3_plots(train_features)
         logger.info("Generated Phase 3 visualizations")
 

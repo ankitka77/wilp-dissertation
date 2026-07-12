@@ -250,7 +250,7 @@ python -m pytest tests/unit/test_phase2_kpi_analysis.py --cov=src/data --cov-rep
 ## Generated Outputs
 
 ### Validation Report
-**File**: `reports/phase2/validation_report.txt`
+**File**: `artifacts/reports/phase2/validation_report.txt`
 **Contents**:
 - Training dataset validation status (6 checks)
 - Test dataset validation status (5 checks)
@@ -429,8 +429,8 @@ Do not proceed to Phase 3 until this Phase 2 is approved and validated.
 1. `src/visualization/plotter.py` (Enhanced with Phase 2 plots)
 
 ### New Directories Created
-1. `reports/phase2/`
-2. `reports/phase2/plots/`
+1. `artifacts/reports/phase2/`
+2. `artifacts/plots/`
 
 ### Configuration (No changes needed)
 - `config/logging.yaml` - Already configured

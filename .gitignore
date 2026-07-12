@@ -29,3 +29,14 @@ Thumbs.db
 
 # VS Code
 .vscode/
+
+# Generated Artifacts
+
+artifacts/
+
+# Keep directory structure only
+!artifacts/.gitkeep
+!artifacts/reports/.gitkeep
+!artifacts/models/.gitkeep
+!artifacts/experiments/.gitkeep
+!artifacts/plots/.gitkeep

@@ -140,7 +140,7 @@ validator.generate_validation_report(train_result, test_result, kpi_analysis)
 ```python
 from data.dataset_profiler import DatasetProfiler
 
-profiler = DatasetProfiler("reports/phase2")
+profiler = DatasetProfiler("artifacts/reports/phase2")
 
 # Generate and save all reports
 profiler.save_all_reports(train_df, test_df)
@@ -169,7 +169,7 @@ kpi_analysis = profiler.generate_kpi_analysis(train_df, test_df)
 ```python
 from visualization.plotter import VisualizationService
 
-viz = VisualizationService("reports/phase2/plots")
+viz = VisualizationService("artifacts/plots")
 
 # Generate all plots
 viz.generate_all_plots(train_df, test_df)
@@ -191,9 +191,9 @@ python phase2_analysis.py
 ```
 
 **Output**:
-- All validation reports saved to `reports/phase2/`
-- All CSV reports saved to `reports/phase2/`
-- All plots saved to `reports/phase2/plots/`
+- All validation reports saved to `artifacts/reports/phase2/`
+- All CSV reports saved to `artifacts/reports/phase2/`
+- All plots saved to `artifacts/plots/`
 - Detailed console logging showing all operations
 
 ### Method 2: Run Individual Components
@@ -222,11 +222,11 @@ train_result = validator.validate_train_schema(train_df)
 test_result = validator.validate_test_schema(test_df)
 
 # Profile dataset
-profiler = DatasetProfiler("reports/phase2")
+profiler = DatasetProfiler("artifacts/reports/phase2")
 profiler.save_all_reports(train_df, test_df)
 
 # Generate visualizations
-viz = VisualizationService("reports/phase2/plots")
+viz = VisualizationService("artifacts/plots")
 viz.generate_all_plots(train_df, test_df)
 ```
 

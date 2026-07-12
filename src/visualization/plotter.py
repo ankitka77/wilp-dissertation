@@ -10,6 +10,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
+from sklearn import metrics
 
 logger = logging.getLogger("project")
 
@@ -17,7 +18,7 @@ logger = logging.getLogger("project")
 class VisualizationService:
     """Generate exploratory visualizations for KPI datasets."""
 
-    def __init__(self, output_dir: str | Path = "reports/phase2/plots"):
+    def __init__(self, output_dir: str | Path = "artifacts/plots"):
         """Initialize VisualizationService."""
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -225,12 +226,86 @@ class VisualizationService:
         self.plot_rolling_mean_example(features)
 
     def plot_kpi_series(self, frame: pd.DataFrame, value_col: str = "value") -> None:
-        """Plot KPI series with anomaly overlays in later phases."""
-        raise NotImplementedError("Phase 2+ will add KPI exploratory plots.")
+        """Plot KPI series with anomaly overlays for later phases."""
+        if value_col not in frame.columns:
+            logger.warning("Column %s not found; skipping KPI series plot", value_col)
+            return
+
+        plt.figure(figsize=(12, 6))
+        plt.plot(frame.index, frame[value_col], color="steelblue", linewidth=1.2)
+        if "prediction" in frame.columns:
+            anomalies = frame[frame["prediction"] == 1]
+            plt.scatter(anomalies.index, anomalies[value_col], color="red", label="anomaly", zorder=5)
+            plt.legend()
+        plt.title("KPI Series with Anomaly Overlay")
+        plt.xlabel("Sample")
+        plt.ylabel(value_col)
+        plt.grid(alpha=0.3)
+        plt.tight_layout()
+
+        output_path = self.output_dir / "09_anomaly_timeline.png"
+        plt.savefig(output_path, dpi=300, bbox_inches="tight")
+        plt.close()
+
+        logger.info("Anomaly timeline plot saved to %s", output_path)
 
     def plot_model_comparison(self, results: pd.DataFrame) -> None:
         """Visualize model performance comparison in later phases."""
         raise NotImplementedError("Phase 4+ will add model comparison plots.")
+
+    def plot_roc_curve(self, y_true: pd.Series | list[int], y_scores: pd.Series | list[float]) -> None:
+        """Plot an ROC curve for anomaly detection scores."""
+        fpr, tpr, _ = metrics.roc_curve(y_true, y_scores)
+        plt.figure(figsize=(8, 6))
+        plt.plot(fpr, tpr, label="ROC")
+        plt.plot([0, 1], [0, 1], linestyle="--", color="gray")
+        plt.title("ROC Curve")
+        plt.xlabel("False Positive Rate")
+        plt.ylabel("True Positive Rate")
+        plt.grid(alpha=0.3)
+        plt.tight_layout()
+
+        output_path = self.output_dir / "10_roc_curve.png"
+        plt.savefig(output_path, dpi=300, bbox_inches="tight")
+        plt.close()
+
+        logger.info("ROC curve plot saved to %s", output_path)
+
+    def plot_precision_recall_curve(self, y_true: pd.Series | list[int], y_scores: pd.Series | list[float]) -> None:
+        """Plot a precision-recall curve for anomaly detection scores."""
+        precision, recall, _ = metrics.precision_recall_curve(y_true, y_scores)
+        plt.figure(figsize=(8, 6))
+        plt.plot(recall, precision, label="Precision-Recall")
+        plt.title("Precision-Recall Curve")
+        plt.xlabel("Recall")
+        plt.ylabel("Precision")
+        plt.grid(alpha=0.3)
+        plt.tight_layout()
+
+        output_path = self.output_dir / "11_precision_recall_curve.png"
+        plt.savefig(output_path, dpi=300, bbox_inches="tight")
+        plt.close()
+
+        logger.info("Precision-recall curve plot saved to %s", output_path)
+
+    def plot_confusion_matrix(self, y_true: pd.Series | list[int], y_pred: pd.Series | list[int]) -> None:
+        """Plot a confusion matrix for predictions."""
+        matrix = metrics.confusion_matrix(y_true, y_pred)
+        plt.figure(figsize=(7, 6))
+        plt.imshow(matrix, cmap="Blues")
+        plt.title("Confusion Matrix")
+        plt.xlabel("Predicted")
+        plt.ylabel("Actual")
+        plt.xticks([0, 1], ["Normal", "Anomaly"])
+        plt.yticks([0, 1], ["Normal", "Anomaly"])
+        plt.colorbar()
+        plt.tight_layout()
+
+        output_path = self.output_dir / "12_confusion_matrix.png"
+        plt.savefig(output_path, dpi=300, bbox_inches="tight")
+        plt.close()
+
+        logger.info("Confusion matrix plot saved to %s", output_path)
 
     def generate_all_plots(self, train_df: pd.DataFrame, test_df: pd.DataFrame | None = None) -> None:
         """Generate all exploratory plots."""

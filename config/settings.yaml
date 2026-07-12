@@ -5,8 +5,14 @@ project:
 
 paths:
   data_dir: data
-  reports_dir: reports
   logs_dir: data/logs
+
+artifacts:
+  root: artifacts
+  reports_root: artifacts/reports
+  models_root: artifacts/models
+  experiments_root: artifacts/experiments
+  plots_root: artifacts/plots
 
 logging:
   level: INFO

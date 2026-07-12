@@ -49,7 +49,7 @@ def main() -> bool:
         )
         feature_engineer = KPIFeatureEngineer(config=feature_config)
         pipeline = PreprocessingPipeline(config=feature_config)
-        visualization_service = VisualizationService(settings.paths.reports_dir + "/phase3/plots")
+        visualization_service = VisualizationService(settings.artifacts.plots_root)
 
         logger.info("\n" + "=" * 70)
         logger.info("STEP 1: Loading Datasets")
@@ -88,7 +88,7 @@ def main() -> bool:
         logger.info("\n" + "=" * 70)
         logger.info("STEP 4: Generating Reports")
         logger.info("=" * 70)
-        output_dir = Path(settings.paths.reports_dir) / "phase3"
+        output_dir = settings.artifacts.phase_report_dir("phase3")
         feature_engineer.generate_feature_reports(train_features, output_dir)
         logger.info(f"[OK] Feature reports saved to {output_dir}")
 

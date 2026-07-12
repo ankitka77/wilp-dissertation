@@ -14,8 +14,8 @@ Phase 3 implements KPI feature engineering for the AIOps dataset without introdu
 ## Outputs
 
 - Processed datasets: data/processed/kpi_features_train.csv and data/processed/kpi_features_test.csv
-- Reports: reports/phase3/feature_summary.csv, reports/phase3/feature_statistics.csv, reports/phase3/feature_correlation.csv
-- Visualizations: reports/phase3/plots/06_feature_correlation_heatmap.png, 07_feature_distributions.png, 08_rolling_mean_example.png
+- Reports: artifacts/reports/phase3/feature_summary.csv, artifacts/reports/phase3/feature_statistics.csv, artifacts/reports/phase3/feature_correlation.csv
+- Visualizations: artifacts/plots/06_feature_correlation_heatmap.png, artifacts/plots/07_feature_distributions.png, artifacts/plots/08_rolling_mean_example.png
 
 ## Execution
 

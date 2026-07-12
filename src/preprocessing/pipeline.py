@@ -195,7 +195,7 @@ class KPIFeatureEngineer:
 
         return {"is_valid": not issues, "issues": issues}
 
-    def generate_feature_reports(self, frame: pd.DataFrame, output_dir: str | Path = "reports/phase3") -> dict[str, Path]:
+    def generate_feature_reports(self, frame: pd.DataFrame, output_dir: str | Path = "artifacts/reports/phase3") -> dict[str, Path]:
         """Create feature summary, statistics, and correlation reports."""
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)

@@ -2,9 +2,10 @@
 
 __all__ = [
     "preprocessing",
-    "kpi_model",
+    "models",
     "log_model",
     "fusion",
     "evaluation",
     "visualization",
+    "infrastructure",
 ]
