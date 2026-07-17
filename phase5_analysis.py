@@ -104,11 +104,21 @@ def main() -> int:
     # visualizations
     viz = LogVisualizer()
     viz_paths = []
-    viz_paths.append(viz.plot_event_frequency(event_stats))
-    viz_paths.append(viz.plot_top_templates(event_stats))
-    viz_paths.append(viz.plot_sequence_length_histogram(all_seqs))
-    viz_paths.append(viz.plot_sequence_length_boxplot(all_seqs))
-    viz_paths.append(viz.plot_train_test_split(train_df, test_df))
+    p = viz.plot_event_frequency(event_stats)
+    if p:
+        viz_paths.append(p)
+    p = viz.plot_top_templates(event_stats)
+    if p:
+        viz_paths.append(p)
+    p = viz.plot_sequence_length_histogram(all_seqs)
+    if p:
+        viz_paths.append(p)
+    p = viz.plot_sequence_length_boxplot(all_seqs)
+    if p:
+        viz_paths.append(p)
+    p = viz.plot_train_test_split(train_df, test_df)
+    if p:
+        viz_paths.append(p)
 
     # manifest
     manifest = {

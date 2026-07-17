@@ -2,10 +2,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+import logging
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
+
+logger = logging.getLogger("project")
 
 
 class LogVisualizer:
@@ -36,8 +39,22 @@ class LogVisualizer:
 
     def plot_sequence_length_histogram(self, sequences: pd.DataFrame) -> Path:
         path = self.output_dir / "03_sequence_length_distribution.png"
+        # ensure we have a sequence_length series; try to compute from sequence_events
+        if "sequence_length" not in sequences.columns:
+            if "sequence_events" in sequences.columns:
+                lengths = sequences["sequence_events"].apply(lambda x: len(x) if hasattr(x, "__len__") and x is not None else 0)
+            else:
+                logger.info("No sequence_length or sequence_events available; skipping histogram plot")
+                return None
+        else:
+            lengths = sequences["sequence_length"].dropna()
+
+        if len(lengths) == 0:
+            logger.info("No sequence lengths to plot; skipping histogram")
+            return None
+
         plt.figure(figsize=(8, 5))
-        plt.hist(sequences["sequence_length"].dropna(), bins=30, color="steelblue")
+        plt.hist(lengths, bins=30, color="steelblue")
         plt.subplots_adjust(bottom=0.15)
         plt.savefig(path, dpi=150, bbox_inches="tight")
         plt.close()
@@ -45,8 +62,22 @@ class LogVisualizer:
 
     def plot_sequence_length_boxplot(self, sequences: pd.DataFrame) -> Path:
         path = self.output_dir / "03b_sequence_length_boxplot.png"
+        # similar handling as histogram
+        if "sequence_length" not in sequences.columns:
+            if "sequence_events" in sequences.columns:
+                lengths = sequences["sequence_events"].apply(lambda x: len(x) if hasattr(x, "__len__") and x is not None else 0)
+            else:
+                logger.info("No sequence_length or sequence_events available; skipping boxplot")
+                return None
+        else:
+            lengths = sequences["sequence_length"].dropna()
+
+        if len(lengths) == 0:
+            logger.info("No sequence lengths to plot; skipping boxplot")
+            return None
+
         plt.figure(figsize=(6, 4))
-        plt.boxplot(sequences["sequence_length"].dropna())
+        plt.boxplot(lengths)
         plt.subplots_adjust(bottom=0.15)
         plt.savefig(path, dpi=150, bbox_inches="tight")
         plt.close()
