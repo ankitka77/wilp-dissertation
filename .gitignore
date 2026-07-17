@@ -1,10 +1,12 @@
 # Python
 __pycache__/
 *.py[cod]
+*.pyc
 *$py.class
 
 # Datasets
 data/
+!data/README.md
 
 # Pytest
 .pytest_cache/
@@ -23,6 +25,8 @@ env/
 # OS files
 .DS_Store
 Thumbs.db
+.coverage
+htmlcov/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -31,12 +35,14 @@ Thumbs.db
 .vscode/
 
 # Generated Artifacts
-
-artifacts/
-
 # Keep directory structure only
+artifacts/*
 !artifacts/.gitkeep
+!artifacts/reports/
 !artifacts/reports/.gitkeep
+!artifacts/models/
 !artifacts/models/.gitkeep
-!artifacts/experiments/.gitkeep
+!artifacts/plots/
 !artifacts/plots/.gitkeep
+!artifacts/experiments/
+!artifacts/experiments/.gitkeep

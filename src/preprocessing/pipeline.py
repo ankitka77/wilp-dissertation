@@ -256,7 +256,17 @@ class KPIFeatureEngineer:
         return [column for column in frame.columns if column not in excluded]
 
     def get_numeric_feature_columns(self, frame: pd.DataFrame):
-        return [column for column in self.get_feature_columns(frame) if pd.api.types.is_numeric_dtype(frame[column])]
+        cols = []
+        for column in self.get_feature_columns(frame):
+            # Accept columns that are already numeric dtype
+            if pd.api.types.is_numeric_dtype(frame[column]):
+                cols.append(column)
+                continue
+            # Or columns that can be coerced to numeric values (e.g., strings like '12.5')
+            coerced = pd.to_numeric(frame[column], errors="coerce")
+            if coerced.notna().any():
+                cols.append(column)
+        return cols
 
 @dataclass
 class PreprocessingPipeline:

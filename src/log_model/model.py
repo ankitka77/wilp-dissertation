@@ -1,4 +1,14 @@
-"""Log anomaly model skeleton."""
+"""Log anomaly model skeleton.
+
+Note:
+This module provides a lightweight scaffold for log anomaly detection models.
+It is intentionally minimal because Phase 5 implements preprocessing under
+`src/log_processing` while model-specific implementations (for example
+DeepLog/LSTM-based models planned for Phase 6) should be added here.
+
+The package is preserved for forward development and backward-compatibility
+so that downstream code can import `src.log_model` without changes.
+"""
 
 from __future__ import annotations
 

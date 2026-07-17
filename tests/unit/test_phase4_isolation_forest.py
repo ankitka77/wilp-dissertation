@@ -27,7 +27,7 @@ class TestIsolationForestModel:
         """Create a small synthetic feature frame for testing."""
         return pd.DataFrame(
             {
-                "timestamp": pd.date_range("2024-01-01", periods=20, freq="H"),
+                "timestamp": pd.date_range("2024-01-01", periods=20, freq="h"),
                 "KPI ID": ["KPI-1"] * 20,
                 "label": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
                 "value": [10.0, 10.2, 10.1, 10.3, 10.4, 10.2, 10.5, 10.6, 100.0, 101.0, 10.7, 10.4, 10.8, 10.9, 10.5, 10.6, 10.7, 10.8, 99.0, 100.5],
@@ -79,7 +79,7 @@ class TestIsolationForestModel:
         """Feature preparation should produce compact numeric columns for large datasets."""
         frame = pd.DataFrame(
             {
-                "timestamp": pd.date_range("2024-01-01", periods=5, freq="H"),
+                "timestamp": pd.date_range("2024-01-01", periods=5, freq="h"),
                 "KPI ID": ["KPI-1"] * 5,
                 "label": [0, 0, 1, 0, 1],
                 "value": [10.0, 11.0, "12.5", None, 14.0],

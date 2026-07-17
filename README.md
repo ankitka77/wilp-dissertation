@@ -270,6 +270,22 @@ Log anomaly detection model scaffolding.
 - `model.py`: Base log anomaly model interface with `fit` and `predict` placeholders
 - `__init__.py`: Package marker
 
+#### `src/log_processing/`
+
+- Phase 5 log preprocessing and preparation utilities.
+
+- This package contains loaders, parsers, template miners, vocabulary builders, sequence builders, validators, profilers and report generators used to convert raw system logs (HDFS/BGL style) into the sequence-based datasets required by later models (e.g., DeepLog in Phase 6).
+
+- All Phase 5 *preprocessing* logic is intentionally placed under `src/log_processing` to avoid ambiguity with model implementations.
+
+#### `src/log_model/` (retained as future model package)
+
+- Purpose: a lightweight scaffold reserved for Phase 6/7 model implementations (e.g., DeepLog/sequence models) and for backwards-compatibility references in earlier phases.
+
+- Current state: contains a minimal `LogAnomalyModel` scaffold (see `src/log_model/model.py`) and is not used for Phase 5 preprocessing. It is preserved so Phase 6 model development can target a dedicated package without impacting Phase 1–5 code paths.
+
+- If you prefer to remove the package now and reintroduce it later, let me know; keeping it avoids breaking any code that may import `src.log_model` and clarifies where DeepLog model code should live.
+
 #### `src/fusion/`
 
 Fusion logic that combines KPI and log signals.

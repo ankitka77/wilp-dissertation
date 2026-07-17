@@ -71,6 +71,21 @@ class Phase4Settings(BaseModel):
     git_tag: str | None = None
 
 
+class Phase5Settings(BaseModel):
+    """Configuration for Phase 5 log processing."""
+
+    dataset_type: str = "hdfs"
+    input_dir: str = "data/logs/HDFS_v1"
+    parser_mode: str = "auto"
+    sequence_mode: str = "auto"
+    window_size: int = 10
+    stride: int = 1
+    min_sequence_length: int = 1
+    max_sequence_length: int = 1000000
+    train_ratio: float = 0.8
+    include_dataset_fingerprint: bool = True
+
+
 class AppSettings(BaseModel):
     """Top-level validated settings model."""
 
@@ -80,6 +95,7 @@ class AppSettings(BaseModel):
     artifacts: ArtifactSettings = Field(default_factory=ArtifactSettings)
     feature_engineering: FeatureEngineeringSettings = Field(default_factory=FeatureEngineeringSettings)
     phase4: Phase4Settings = Field(default_factory=Phase4Settings)
+    phase5: Phase5Settings = Field(default_factory=Phase5Settings)
 
 
 DEFAULT_CONFIG_FILE = Path("config/settings.yaml")
