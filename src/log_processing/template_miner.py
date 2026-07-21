@@ -26,6 +26,7 @@ class TemplateMiner:
         # signed floating point numbers (including .5, 1.0, -2.3)
         "SIGNED_FLOAT": re.compile(r"\b[+-]?(?:\d+\.\d*|\.\d+)\b"),
         # fallback integer matcher (unsigned)
+        "HDFS_BLOCK": re.compile(r"\b(blk|block)_-?\d+\b", re.IGNORECASE,),
         "NUMBER": re.compile(r"\b\d+\b"),
         "PATH": re.compile(r"(/[^\s]+)+"),
         "QUOTED": re.compile(r'"[^\"]*"|\'[^\']*\''),
@@ -35,7 +36,9 @@ class TemplateMiner:
         self.placeholder = placeholder
 
     def mine_templates(self, df: pd.DataFrame, message_col: str = "message") -> pd.DataFrame:
-        out = df.copy()
+        # Use a shallow copy to avoid duplicating large underlying arrays
+        # while still returning a DataFrame with the same columns/structure.
+        out = df.copy(deep=False)
         # tolerate being given raw loader output by falling back to 'raw_line'
         if message_col not in out.columns:
             if "raw_line" in out.columns:
@@ -46,10 +49,28 @@ class TemplateMiner:
 
         def mask(text: str) -> str:
             s = text
-            for _, patt in self.MASK_PATTERNS.items():
+
+            # Preserve the semantic prefix while masking the numeric block ID
+            s = re.sub(
+                r"\b(blk|block)_-?\d+\b",
+                r"\1_<*>",
+                s,
+                flags=re.IGNORECASE,
+            )
+
+            # Apply all remaining generic masks
+            for name, patt in self.MASK_PATTERNS.items():
+                if name == "HDFS_BLOCK":
+                    continue
                 s = patt.sub(self.placeholder, s)
-            # collapse multiple placeholders
-            s = re.sub(rf"({re.escape(self.placeholder)})+", self.placeholder, s)
+
+            # Collapse repeated placeholders
+            s = re.sub(
+                rf"({re.escape(self.placeholder)})+",
+                self.placeholder,
+                s,
+            )
+
             return s.strip()
 
         out["template"] = out["template"].apply(mask)

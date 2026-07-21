@@ -7,12 +7,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 lp_path = ROOT / "src" / "log_processing" / "log_parser.py"
 
+
 def _load_module_from_path(name: str, path: Path):
     loader = SourceFileLoader(name, str(path))
     spec = importlib.util.spec_from_loader(loader.name, loader)
     module = importlib.util.module_from_spec(spec)
     loader.exec_module(module)
     return module
+
 
 LogParser = _load_module_from_path("log_parser_phase5", lp_path).LogParser
 

@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import logging
+import project_bootstrap  # noqa: F401
 import sys
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from common.logging_utils import configure_logging
 from common.settings import load_settings

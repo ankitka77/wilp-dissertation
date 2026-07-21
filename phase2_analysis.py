@@ -9,12 +9,9 @@ This script executes the complete Phase 2 analysis:
 
 from __future__ import annotations
 
-import logging
+import project_bootstrap  # noqa: F401
 import sys
 from pathlib import Path
-
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from common.logging_utils import configure_logging
 from common.settings import load_settings
@@ -109,10 +106,10 @@ def main():
 
         dataset_profiler.save_all_reports(train_df, test_df)
         logger.info("[OK] All profiling reports generated:")
-        logger.info(f"  - dataset_summary.csv")
-        logger.info(f"  - descriptive_statistics.csv")
-        logger.info(f"  - kpi_distribution.csv")
-        logger.info(f"  - anomaly_distribution.csv")
+        logger.info("  - dataset_summary.csv")
+        logger.info("  - descriptive_statistics.csv")
+        logger.info("  - kpi_distribution.csv")
+        logger.info("  - anomaly_distribution.csv")
 
         # Step 5: Generate visualizations
         logger.info("\n" + "=" * 70)
@@ -121,11 +118,11 @@ def main():
 
         visualization_service.generate_all_plots(train_df, test_df)
         logger.info("[OK] All visualizations generated:")
-        logger.info(f"  - KPI ID distributions")
-        logger.info(f"  - Anomaly distribution")
-        logger.info(f"  - KPI value histograms")
-        logger.info(f"  - KPI value boxplots")
-        logger.info(f"  - KPI value distributions by ID")
+        logger.info("  - KPI ID distributions")
+        logger.info("  - Anomaly distribution")
+        logger.info("  - KPI value histograms")
+        logger.info("  - KPI value boxplots")
+        logger.info("  - KPI value distributions by ID")
 
         # Summary statistics
         logger.info("\n" + "=" * 70)
@@ -133,17 +130,17 @@ def main():
         logger.info("=" * 70)
 
         summary_stats = dataset_profiler.get_summary_statistics(train_df)
-        logger.info(f"Training dataset:")
-        logger.info(f"  - Total records: {summary_stats['total_records']:,}")
-        logger.info(f"  - KPI IDs: {summary_stats['kpi_count']}")
-        logger.info(f"  - Anomalies: {summary_stats.get('anomaly_count', 'N/A'):,}")
-        logger.info(f"  - Normal records: {summary_stats.get('normal_count', 'N/A'):,}")
+        logger.info("Training dataset:")
+        logger.info("  - Total records: %s", f"{summary_stats['total_records']:,}")
+        logger.info("  - KPI IDs: %s", summary_stats['kpi_count'])
+        logger.info("  - Anomalies: %s", f"{summary_stats.get('anomaly_count', 'N/A'):,}")
+        logger.info("  - Normal records: %s", f"{summary_stats.get('normal_count', 'N/A'):,}")
         if 'anomaly_percentage' in summary_stats:
-            logger.info(f"  - Anomaly percentage: {summary_stats['anomaly_percentage']:.2f}%")
+            logger.info("  - Anomaly percentage: %.2f%%", summary_stats['anomaly_percentage'])
 
-        logger.info(f"\nTest dataset:")
-        logger.info(f"  - Total records: {len(test_df):,}")
-        logger.info(f"  - KPI IDs: {test_df['KPI ID'].nunique()}")
+        logger.info("\nTest dataset:")
+        logger.info("  - Total records: %s", f"{len(test_df):,}")
+        logger.info("  - KPI IDs: %s", test_df['KPI ID'].nunique())
 
         logger.info("\n" + "=" * 70)
         logger.info("PHASE 2 ANALYSIS COMPLETED SUCCESSFULLY")

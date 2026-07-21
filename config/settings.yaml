@@ -2,6 +2,7 @@ project:
   name: anomaly-fault-detection-wireless
   environment: development
   random_seed: 42
+threshold: 0.5
 
 paths:
   data_dir: data

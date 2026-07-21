@@ -23,31 +23,37 @@ class LogDataLoader:
     def list_files(self) -> List[Path]:
         if not self.input_dir.exists():
             return []
-        return [p for p in sorted(self.input_dir.iterdir()) if p.is_file()]
+        
+        all_files = [p for p in sorted(self.input_dir.iterdir()) if p.is_file()]
+        log_files = [p for p in all_files if p.suffix.lower() == ".log"]
+        return log_files if log_files else all_files
 
     def load(self) -> pd.DataFrame:
         rows = []
         for path in self.list_files():
+            logger.info("Reading %s", path.name)
+            lineno = 0
             try:
-                text = path.read_text(encoding="utf-8", errors="ignore")
+                with path.open("r", encoding="utf-8", errors="ignore") as fh:
+                    for lineno, line in enumerate(fh, start=1):
+                        if not line.strip():
+                            continue
+                        try:
+                            rows.append({"source": path.name, "raw_line": line.rstrip("\n")})
+                        except Exception as e:
+                            logger.warning(
+                                "Skipping malformed line in %s at line %d: %s",
+                                path.name,
+                                lineno,
+                                str(e),
+                            )
+                        if lineno % 100_000 == 0:
+                            logger.info("%s: %d lines loaded", path.name, lineno)
             except Exception as e:
                 logger.warning("Failed to read log file %s: %s", path, str(e))
-                # skip unreadable file but continue processing others
                 continue
-            for lineno, line in enumerate(text.splitlines(), start=1):
-                if not line.strip():
-                    # skip blank lines silently (common and expected)
-                    continue
-                try:
-                    rows.append({"source": path.name, "raw_line": line.rstrip("\n")})
-                except Exception as e:
-                    # log malformed line but continue processing
-                    logger.warning(
-                        "Skipping malformed line in %s at line %d: %s",
-                        path.name,
-                        lineno,
-                        str(e),
-                    )
+
+            logger.info("Finished %s (%d lines)", path.name, lineno)
 
         return pd.DataFrame(rows)
 

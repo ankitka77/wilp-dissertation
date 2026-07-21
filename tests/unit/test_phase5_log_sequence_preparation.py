@@ -1,11 +1,7 @@
-import json
-import tempfile
+
 from pathlib import Path
 import pandas as pd
-import sys
-
-# Ensure tests can import the `src` package when pytest alters sys.path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+import project_bootstrap  # noqa: F401
 
 import importlib.util
 from importlib.machinery import SourceFileLoader
@@ -17,12 +13,14 @@ lp_dir = ROOT / "src" / "log_processing"
 tm_path = lp_dir / "template_miner.py"
 eim_path = lp_dir / "event_id_mapper.py"
 
+
 def _load_module_from_path(name: str, path: Path):
     loader = SourceFileLoader(name, str(path))
     spec = importlib.util.spec_from_loader(loader.name, loader)
     module = importlib.util.module_from_spec(spec)
     loader.exec_module(module)
     return module
+
 
 TemplateMiner = _load_module_from_path("template_miner_phase5", tm_path).TemplateMiner
 EventIdMapper = _load_module_from_path("event_id_mapper_phase5", eim_path).EventIdMapper

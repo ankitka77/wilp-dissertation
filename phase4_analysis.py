@@ -1,7 +1,9 @@
+
 """Phase 4 analysis pipeline for KPI anomaly detection with Isolation Forest."""
 
 from __future__ import annotations
 
+import project_bootstrap  # noqa: F401
 import json
 import logging
 import sys
@@ -11,18 +13,14 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parent
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
 from common.logging_utils import configure_logging
 from common.settings import load_settings
 from infrastructure.experiment_manager import ExperimentManager
 from infrastructure.model_factory import ModelFactory
-from models.isolation_forest_model import IsolationForestModel
 from preprocessing.pipeline import KPIFeatureEngineer
 from visualization.plotter import VisualizationService
+
+ROOT = Path(__file__).resolve().parent
 
 logger = logging.getLogger("project")
 
@@ -79,7 +77,7 @@ def main() -> bool:
         test_frame = pd.read_csv(test_path)
 
         train_features = _resolve_feature_frame(train_frame)
-        test_features = _resolve_feature_frame(test_frame)
+        _ = _resolve_feature_frame(test_frame)
 
         config = {
             "n_estimators": 100,

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from typing import List, Dict
 import pandas as pd
-from pathlib import Path
 
 
 class SequenceBuilder:
@@ -69,7 +68,7 @@ class SequenceBuilder:
         sequences = []
         n = len(events)
         for start in range(0, max(0, n - self.window_size + 1), self.stride):
-            window = events[start : start + self.window_size]
+            window = events[start: start + self.window_size]
             seq = {
                 "sequence_id": f"win_{start}",
                 "sequence_events": window,
@@ -77,7 +76,7 @@ class SequenceBuilder:
                 "source": df["source"].iloc[0] if not df.empty else "",
                 "dataset": df["source"].iloc[0] if not df.empty else "",
                 "block_id": None,
-                "session_id": df["session_id"].iloc[start] if "session_id" in df.columns and len(df["session_id"])>start else None,
+                "session_id": df["session_id"].iloc[start] if "session_id" in df.columns and len(df["session_id"]) > start else None,
             }
             # for sliding windows, define input as all but last, target as last
             if len(window) >= 2:

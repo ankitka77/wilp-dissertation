@@ -7,11 +7,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from click import group
-import matplotlib
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -95,7 +90,7 @@ class KPIFeatureEngineer:
             group["day_of_week_cos"] = np.cos(
                 2 * np.pi * group["day_of_week"] / 7
             )
-            
+
             time_diff = group["timestamp"].diff().dt.total_seconds()
             group["time_diff_seconds"] = time_diff.fillna(0.0)
         else:
@@ -142,7 +137,7 @@ class KPIFeatureEngineer:
         """Apply the configured missing value strategy to engineered features."""
         if self.config.missing_strategy == "drop":
             return frame.dropna(axis=0, how="any").reset_index(drop=True)
-        
+
         feature_columns = [
             col for col in frame.columns
             if col not in {"timestamp", "KPI ID", "label"}
@@ -250,7 +245,7 @@ class KPIFeatureEngineer:
     def build_log_sequences(self, frame: pd.DataFrame) -> pd.DataFrame:
         """Build sequence-ready log representation from parsed events."""
         raise NotImplementedError("Phase 6+ will implement log sequence processing.")
-    
+
     def get_feature_columns(self, frame: pd.DataFrame) -> list[str]:
         excluded = {"timestamp", "KPI ID", "label"}
         return [column for column in frame.columns if column not in excluded]
@@ -267,6 +262,7 @@ class KPIFeatureEngineer:
             if coerced.notna().any():
                 cols.append(column)
         return cols
+
 
 @dataclass
 class PreprocessingPipeline:

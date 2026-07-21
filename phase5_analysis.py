@@ -2,22 +2,16 @@
 
 Run with `python phase5_analysis.py` to execute the Phase 5 pipeline.
 """
+
 from __future__ import annotations
 
-import json
-import sys
+import project_bootstrap  # noqa: F401
 from pathlib import Path
 from datetime import datetime, timezone
+import time
 import logging
 
 import pandas as pd
-
-# Ensure the project's `src` directory is on sys.path so legacy imports like
-# `from models...` resolve correctly (keeps backward compatibility with Phases 1-4).
-ROOT = Path(__file__).resolve().parent
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
 
 from common.settings import load_settings
 from infrastructure.experiment_manager import ExperimentManager
@@ -37,23 +31,67 @@ logger = logging.getLogger("project")
 
 
 def main() -> int:
+    print(">>> Entered Phase 5 main()")
+
     settings = load_settings()
 
     # Use Phase5Settings input_dir when available, fallback to default path
     input_dir = getattr(settings, "phase5", None).input_dir if getattr(settings, "phase5", None) is not None else "data/logs/HDFS_v1"
     loader = LogDataLoader(input_dir)
+    print(">> Loading raw logs...")
+    logger.info("Loading raw logs...")
+    t0 = time.perf_counter()
     parsed_raw = loader.load()
     fingerprint = loader.fingerprint()
+    elapsed = time.perf_counter() - t0
+    logger.info("Loading raw logs completed in %.1f seconds", elapsed)
+    print(f">> Loading raw logs completed in {elapsed:.1f} seconds")
 
     parser = LogParser()
+    logger.info("Parsing logs...")
+    print(">> Parsing logs...")
+
+    t0 = time.perf_counter()
     parsed = parser.parse(parsed_raw)
+    elapsed = time.perf_counter() - t0
+    logger.info("Parsing logs completed in %.1f seconds", elapsed)
+    print(f">> Parsing logs completed in {elapsed:.1f} seconds")
 
     miner = TemplateMiner()
+    logger.info("Mining templates...")
+    print(">> Mining templates...")
+    t0 = time.perf_counter()
     mined = miner.mine_templates(parsed)
+    elapsed = time.perf_counter() - t0
+    logger.info("Mining templates completed in %.1f seconds", elapsed)
+    print(f">> Mining templates completed in {elapsed:.1f} seconds")
+    print(f">> Templates after mining: {mined['template'].nunique():,}")
+    print(">> Sample mined templates:")
+    print(mined["template"].head(10).to_string(index=False))
+    unique_templates = mined["template"].nunique()
+    total_logs = len(mined)
+
+    print(f">> Templates after mining: {unique_templates:,}")
+    print(f">> Total log entries: {total_logs:,}")
+    print(f">> Template uniqueness ratio: {unique_templates / total_logs:.2%}")
 
     mapper = EventIdMapper()
+    logger.info("Building event vocabulary...")
+    print(">> Building event vocabulary...")
+
+    t0 = time.perf_counter()
     vocab_df = mapper.build_vocabulary(mined)
+    elapsed = time.perf_counter() - t0
+    logger.info("Building event vocabulary completed in %.1f seconds", elapsed)
+    print(f">> Building event vocabulary completed in {elapsed:.1f} seconds")
+
+    logger.info("Mapping event IDs...")
+    print(">> Mapping event IDs...")
+    t0 = time.perf_counter()
     mapped = mapper.map_event_ids(mined)
+    elapsed = time.perf_counter() - t0
+    logger.info("Mapping event IDs completed in %.1f seconds", elapsed)
+    print(f">> Mapping event IDs completed in {elapsed:.1f} seconds")   
 
     phase5_cfg = getattr(settings, "phase5", None)
     if phase5_cfg is None:
@@ -66,21 +104,44 @@ def main() -> int:
         train_ratio = phase5_cfg.train_ratio
 
     seq_builder = SequenceBuilder(window_size=window_size, stride=stride, train_ratio=train_ratio)
+    logger.info("Building sequences...")
+    print(">> Building sequences...")
+    t0 = time.perf_counter()
     sequences = seq_builder.build_sequences(mapped)
+    elapsed = time.perf_counter() - t0
+    logger.info("Building sequences completed in %.1f seconds", elapsed)
+    print(f">> Building sequences completed in {elapsed:.1f} seconds")
 
     validator = DatasetValidator()
     # use train+test as all
     all_seqs = sequences.get("all", pd.DataFrame())
+    logger.info("Validation...")
+    print(">> Validation...")
+    t0 = time.perf_counter()
     validation = validator.validate(parsed=mined, vocab=vocab_df, sequences=all_seqs, config={})
+    elapsed = time.perf_counter() - t0
+    logger.info("Validation completed in %.1f seconds", elapsed)
+    print(f">> Validation completed in {elapsed:.1f} seconds")
 
     profiler = SequenceProfiler()
+    logger.info("Profiling...")
+    print(">> Profiling...")
+    t0 = time.perf_counter()
     event_stats = profiler.profile_events(mined)
     seq_stats = profiler.profile_sequences(all_seqs)
+    elapsed = time.perf_counter() - t0
+    logger.info("Profiling completed in %.1f seconds", elapsed)
 
     reports = ReportGenerator()
+    logger.info("Saving artifacts...")
+    print(">> Saving artifacts...")
+    t0 = time.perf_counter()
     reports.save_event_table(event_stats)
     reports.save_sequence_table(pd.DataFrame([seq_stats]))
     reports.save_validation_report(validation)
+    elapsed = time.perf_counter() - t0
+    logger.info("Saving artifacts completed in %.1f seconds", elapsed)
+    print(f">> Saving artifacts completed in {elapsed:.1f} seconds")
 
     # save core data outputs
     out_dir = Path("artifacts/reports/phase5")
@@ -103,6 +164,9 @@ def main() -> int:
 
     # visualizations
     viz = LogVisualizer()
+    logger.info("Generating visualizations...")
+    print(">> Generating visualizations...")
+    t0 = time.perf_counter()
     viz_paths = []
     p = viz.plot_event_frequency(event_stats)
     if p:
@@ -119,6 +183,9 @@ def main() -> int:
     p = viz.plot_train_test_split(train_df, test_df)
     if p:
         viz_paths.append(p)
+    elapsed = time.perf_counter() - t0
+    logger.info("Generating visualizations completed in %.1f seconds", elapsed)
+    print(f">> Generating visualizations completed in {elapsed:.1f} seconds")
 
     # manifest
     manifest = {
@@ -158,15 +225,27 @@ def main() -> int:
         tag = getattr(settings.phase4, "git_tag", None)
 
     manifest.update({"git_branch": branch, "git_commit": commit, "git_tag": tag, "notes": ""})
+    logger.info("Writing manifest...")
+    print(">> Writing manifest...")
+    t0 = time.perf_counter()
     reports.save_manifest(manifest)
+    elapsed = time.perf_counter() - t0
+    logger.info("Writing manifest completed in %.1f seconds", elapsed)
+    print(f">> Writing manifest completed in {elapsed:.1f} seconds")
 
     # experiment manager
+    logger.info("Experiment finalization...")
+    print(">> Experiment finalization...")
+    t0 = time.perf_counter()
     em = ExperimentManager()
-    exp_id = em.start_experiment(manifest)
+    em.start_experiment(manifest)
     em.log_metrics({"vocab_size": manifest["vocabulary_size"], "sequence_count": manifest["sequence_count"]})
     for p in viz_paths:
         em.log_plot(p, Path(p).name)
     em.finalize()
+    elapsed = time.perf_counter() - t0
+    logger.info("Experiment finalization completed in %.1f seconds", elapsed)
+    print(f">> Experiment finalization completed in {elapsed:.1f} seconds")
 
     print("Phase 5 completed. Artifacts written to artifacts/reports/phase5 and artifacts/plots/phase5")
     return 0

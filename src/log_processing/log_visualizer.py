@@ -3,8 +3,6 @@ from __future__ import annotations
 
 from pathlib import Path
 import logging
-import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 

@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 import re
-from typing import Any
-from pathlib import Path
 import pandas as pd
 
 
@@ -65,11 +63,42 @@ class LogParser:
 
         # Step 2: known severity tokens at start
         known_levels = {"INFO", "WARN", "WARNING", "ERROR", "DEBUG", "TRACE", "FATAL", "CRITICAL"}
-        first_token = remainder.str.split(n=1).str[0].fillna("")
+
+        # For very large inputs, perform partitioning in chunks to avoid
+        # creating huge intermediate arrays that may cause MemoryError.
+        def _partition_series(s: pd.Series) -> pd.DataFrame:
+            # use partition which is more memory-friendly than split
+            return s.str.partition(" ")
+
+        total = len(remainder)
+        if total > 500_000:
+            parts_first = []
+            # only need the first token for all rows
+            for start in range(0, total, 100_000):
+                chunk = remainder.iloc[start : start + 100_000]
+                p = _partition_series(chunk)
+                parts_first.append(p.iloc[:, 0].fillna(""))
+            first_token = pd.concat(parts_first)
+        else:
+            first_token = _partition_series(remainder).iloc[:, 0].fillna("")
+
         mask_known = first_token.isin(known_levels)
         if mask_known.any():
             out.loc[mask_known, "level"] = first_token[mask_known]
-            rest = remainder[mask_known].str.split(n=1).str[1].fillna("")
+
+            # compute the rest (text after the first token) only for known rows
+            known_idx = mask_known[mask_known].index
+            if len(known_idx) > 0:
+                # process known rows in chunks
+                rest_parts = []
+                for start in range(0, len(known_idx), 100_000):
+                    sub_idx = known_idx[start : start + 100_000]
+                    chunk = remainder.loc[sub_idx]
+                    rest_parts.append(_partition_series(chunk).iloc[:, 2].fillna(""))
+                rest = pd.concat(rest_parts)
+            else:
+                rest = pd.Series([], dtype=object)
+
             has_colon = rest.str.contains(":")
             if has_colon.any():
                 colon_idx = has_colon[has_colon].index

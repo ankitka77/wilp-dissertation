@@ -2,17 +2,15 @@
 
 from __future__ import annotations
 
-import sys
+import project_bootstrap  # noqa: F401
 from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
 
 from common.logging_utils import configure_logging
 from common.settings import AppSettings, load_settings
 from fusion.fusion_engine import WeightedFusionEngine
+
+ROOT = Path(__file__).resolve().parents[2]
+SRC = ROOT / "src"
 
 
 def test_load_settings_returns_app_settings() -> None:

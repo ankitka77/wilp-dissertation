@@ -4,6 +4,10 @@ __pycache__/
 *.pyc
 *$py.class
 
+.pytest_cache/
+.coverage
+htmlcov/
+
 # Datasets
 data/
 !data/README.md

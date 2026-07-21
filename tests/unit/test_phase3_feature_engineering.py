@@ -2,18 +2,16 @@
 
 from __future__ import annotations
 
-import sys
+import project_bootstrap  # noqa: F401
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
+from preprocessing.pipeline import FeatureEngineeringConfig, KPIFeatureEngineer
+
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
-from preprocessing.pipeline import FeatureEngineeringConfig, KPIFeatureEngineer
 
 
 class TestKPIFeatureEngineer:

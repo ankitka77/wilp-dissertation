@@ -1,6 +1,5 @@
 import json
 import pandas as pd
-import numpy as np
 from pathlib import Path
 
 from log_processing import (
@@ -60,7 +59,7 @@ def test_deterministic_vocabulary_generation():
 
     # Both vocabularies should have same templates in same sorted order
     assert list(v1["template"]) == sorted(list(set(templates)))
-    assert list(v1["event_id"]) == list(v2["event_id"]) 
+    assert list(v1["event_id"]) == list(v2["event_id"])
     # event_id for 'a' should be 1 because sorted order ['a','b','c']
     row_a = v1[v1["template"] == "a"].iloc[0]
     assert row_a["event_id"] == 1

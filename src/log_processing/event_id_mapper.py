@@ -17,14 +17,34 @@ class EventIdMapper:
         self.vocab: Dict[str, int] = {}
 
     def build_vocabulary(self, df: pd.DataFrame, template_col: str = "template") -> pd.DataFrame:
-        templates = sorted(df[template_col].dropna().unique())
+        # compute frequencies once using value_counts (vectorized)
+        counts = df[template_col].dropna()
+        value_counts = counts.value_counts()
+        print(f">> Unique templates discovered: {len(value_counts):,}")
+
+        # create deterministic template list by sorting template strings
+        templates = sorted(value_counts.index.tolist())
+        # assign deterministic event ids starting at 1
         self.vocab = {t: i + 1 for i, t in enumerate(templates)}
-        rows = [{"template": t, "event_id": self.vocab[t], "frequency": int((df[template_col] == t).sum())} for t in templates]
+        rows = [
+            {"template": t, "event_id": self.vocab[t], "frequency": int(value_counts[t])}
+            for t in templates
+        ]
+        print(f">> Event vocabulary size: {len(self.vocab):,}")
         return pd.DataFrame(rows)
 
     def map_event_ids(self, df: pd.DataFrame, template_col: str = "template") -> pd.DataFrame:
-        out = df.copy()
-        out["event_id"] = out[template_col].map(self.vocab).fillna(0).astype(int)
+        # Shallow copy to avoid duplicating millions of rows.
+        # We only add one new column, so a deep copy is unnecessary.
+        out = df.copy(deep=False)
+
+        out["event_id"] = (
+            out[template_col]
+            .map(self.vocab)
+            .fillna(0)
+            .astype("int32")
+        )
+
         return out
 
     def save_vocab_csv(self, path: str | Path) -> None:

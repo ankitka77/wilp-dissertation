@@ -2,22 +2,19 @@
 
 from __future__ import annotations
 
-import json
-import sys
+import project_bootstrap  # noqa: F401
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
 from evaluation.evaluator import Evaluator
 from infrastructure.experiment_manager import ExperimentManager
 from models.isolation_forest_model import IsolationForestModel
+
+ROOT = Path(__file__).resolve().parents[2]
+SRC = ROOT / "src"
 
 
 class TestIsolationForestModel:

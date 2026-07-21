@@ -2,21 +2,20 @@
 
 from __future__ import annotations
 
-import sys
+import project_bootstrap  # noqa: F401
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
 
 import pandas as pd
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
 from data.data_loader import DataLoader, DataloadResult
 from data.dataset_profiler import DatasetProfiler
 from data.schema_validator import SchemaValidator, ValidationResult
+
+ROOT = Path(__file__).resolve().parents[2]
+SRC = ROOT / "src"
 
 
 class TestDataLoader:
