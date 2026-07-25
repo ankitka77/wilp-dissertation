@@ -28,4 +28,15 @@ Highlights:
 - Writes fused predictions to `evaluation/fusion_predictions.txt` and summary to `evaluation/fusion_summary.json` under the experiment id.
 - Keeps fusion logic simple and deterministic; no visualization or reporting.
 
+Milestone 4 (Statistical Analysis Engine)
+-----------------------------------------
+Added `StatisticalAnalysisEngine` in `phase8/analysis/statistical_analysis.py`.
+
+Highlights:
+- Reads evaluator summaries (`evaluation/kpi_summary.json`, `evaluation/deeplog_summary.json`, `evaluation/fusion_summary.json`) written under an experiment id.
+- Computes higher-level statistics (mean, median, variance, std, min, max, 95% CI approximation) for `precision`, `recall`, and `f1` without recomputing evaluator metrics.
+- Writes artifacts under the experiment id: `analysis/statistics.json`, `analysis/summary_statistics.json`, `analysis/analysis.json`.
+- Provides `aggregate_experiments()` to combine stats across multiple experiments and persist an aggregated summary under the synthetic run id `aggregated`.
+- Follows Phase 8 constraints: no evaluation, no plotting, deterministic, and uses only `ExperimentManager` and `ArtifactStore`.
+
 ```
