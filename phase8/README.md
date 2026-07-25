@@ -16,4 +16,16 @@ Added evaluators in `phase8/evaluators`:
 - `DeepLogEvaluator` — computes sequence-based metrics from `ground_truth.seq` and `predictions.seq` and writes `evaluation/deeplog_summary.json`.
 
 Both evaluators reuse `ArtifactStore`, `DatasetManager`, and `ExperimentManager` and follow Phase 8 design constraints.
+
+Milestone 3 (Fusion Evaluator)
+--------------------------------
+Added `FusionEvaluator` in `phase8/evaluators/fusion_evaluator.py`.
+
+Highlights:
+- Validates experiments through `ExperimentManager`.
+- Reuses `KPIEvaluator` and `DeepLogEvaluator` and the `ArtifactStore`.
+- Supports simple fusion strategies (`AND`, `OR`) via `FusionStrategy`.
+- Writes fused predictions to `evaluation/fusion_predictions.txt` and summary to `evaluation/fusion_summary.json` under the experiment id.
+- Keeps fusion logic simple and deterministic; no visualization or reporting.
+
 ```
