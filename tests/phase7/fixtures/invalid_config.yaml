@@ -1,0 +1,14 @@
+fusion:
+  strategy: unsupported_strategy
+  kpi_weight: -0.10
+  log_weight: 0.00
+  threshold: 1.50
+  window_size: 0m
+  normalization_strategy: unknown
+
+aggregation:
+  strategy: average
+
+logging:
+  level: TRACE
+  enable_debug_artifacts: no

@@ -1,0 +1,16 @@
+{
+  "manifest_version": "1.0",
+  "generated_on": "2026-01-01T00:10:00Z",
+  "experiment_id": "log-detector-exp-001",
+  "detector": {
+    "name": "Log Detector",
+    "source_type": "LOG"
+  },
+  "artifacts": {
+    "predictions": "tests/phase7/sample_data/sample_log_predictions.csv"
+  },
+  "config_snapshot": {
+    "threshold": 0.6,
+    "top_k": 5
+  }
+}

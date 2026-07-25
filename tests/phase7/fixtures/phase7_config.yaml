@@ -1,0 +1,43 @@
+fusion:
+  strategy: weighted_average
+  kpi_weight: 0.50
+  log_weight: 0.50
+  threshold: 0.60
+  window_size: 5m
+  normalization_strategy: min_max
+
+aggregation:
+  strategy: max
+
+logging:
+  level: INFO
+  enable_debug_artifacts: false
+
+artifacts:
+  root_dir: artifacts/phase7
+  retain_intermediate: true
+
+validation:
+  strict: true
+  allow_row_drops: false
+
+sources:
+  kpi:
+    source_type: KPI
+    predictions_path: tests/phase7/sample_data/sample_kpi_predictions.csv
+    required_fields:
+      - timestamp
+      - anomaly_score
+      - prediction
+    entity_key: KPI ID
+  log:
+    source_type: LOG
+    manifest_path: tests/phase7/sample_data/sample_manifest.json
+    predictions_key: predictions
+    required_fields:
+      - timestamp
+      - anomaly_score
+      - is_anomaly
+      - prediction_confidence
+
+extensions: {}

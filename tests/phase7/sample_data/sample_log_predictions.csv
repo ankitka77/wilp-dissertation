@@ -1,0 +1,6 @@
+timestamp,id,session_id,block_id,anomaly_score,is_anomaly,prediction_confidence
+2026-01-01T00:00:45Z,log-001,session-A,blk-001,0.15,0,0.92
+2026-01-01T00:03:20Z,log-002,session-A,blk-001,0.72,1,0.61
+2026-01-01T00:04:15Z,log-003,session-B,blk-003,0.56,1,0.70
+2026-01-01T00:08:10Z,log-004,session-A,blk-002,0.20,0,0.89
+2026-01-01T00:09:50Z,log-005,session-C,blk-005,0.94,1,0.44
