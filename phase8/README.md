@@ -39,4 +39,20 @@ Highlights:
 - Provides `aggregate_experiments()` to combine stats across multiple experiments and persist an aggregated summary under the synthetic run id `aggregated`.
 - Follows Phase 8 constraints: no evaluation, no plotting, deterministic, and uses only `ExperimentManager` and `ArtifactStore`.
 
+Milestone 5 (Visualization Engine)
+----------------------------------
+Added `VisualizationEngine` in `phase8/visualization/visualization_engine.py`.
+
+Highlights:
+- Consumes `analysis/statistics.json` artifacts produced by `StatisticalAnalysisEngine`.
+- Produces PNG visualizations and persists them via `ArtifactStore`:
+	- `visualization/precision_comparison.png`
+	- `visualization/recall_comparison.png`
+	- `visualization/f1_comparison.png`
+	- `visualization/summary_statistics.png`
+	- `visualization/experiment_comparison.png` (aggregated)
+- Uses `matplotlib` (non-interactive `Agg` backend) and keeps plots deterministic and publication-quality.
+- Does not re-compute statistics or duplicate evaluator logic.
+
+
 ```
