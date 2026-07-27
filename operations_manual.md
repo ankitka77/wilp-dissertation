@@ -13,6 +13,7 @@ This concise manual describes the exact steps to set up the environment, prepare
 cd <working directory>
 git clone https://github.com/ankitka77/wilp-dissertation.git
 cd wilp-dissertation\
+git checkout phase8-performance-evaluation
 ```
 
 **2. Create and activate a virtual environment**

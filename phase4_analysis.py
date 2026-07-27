@@ -6,6 +6,7 @@ from __future__ import annotations
 import project_bootstrap  # noqa: F401
 import json
 import logging
+import shutil
 import sys
 from pathlib import Path
 from typing import Any
@@ -23,6 +24,50 @@ from visualization.plotter import VisualizationService
 ROOT = Path(__file__).resolve().parent
 
 logger = logging.getLogger("project")
+
+
+def _publish_latest_artifacts(report_dir: Path, artifacts_base: Path) -> None:
+    """Publish latest Phase 4 artifacts to a stable `artifacts/phase4/latest`.
+
+    This is best-effort: failures are logged as warnings and do not raise.
+    """
+    logger.info("Publishing latest Phase 4 artifacts...")
+    try:
+        latest_dir = artifacts_base / "phase4" / "latest"
+        latest_dir.mkdir(parents=True, exist_ok=True)
+
+        # Copy anomaly_predictions.csv from report_dir when present
+        src_preds = report_dir / "anomaly_predictions.csv"
+        dst_preds = latest_dir / "anomaly_predictions.csv"
+        if src_preds.exists():
+            shutil.copy2(src_preds, dst_preds)
+        else:
+            logger.warning("Source predictions file not found for publishing: %s", src_preds)
+
+        # Try several plausible manifest locations under the experiment layout
+        # 1) manifests/manifest.json under the experiment directory
+        # 2) manifest.json in report_dir
+        manifest_copied = False
+        possible_manifests = [
+            report_dir.parent / "manifests" / "manifest.json",
+            report_dir / "manifest.json",
+            report_dir.parent / "manifest.json",
+        ]
+        for pm in possible_manifests:
+            if pm.exists():
+                try:
+                    shutil.copy2(pm, latest_dir / "manifest.json")
+                    manifest_copied = True
+                    break
+                except Exception as exc:
+                    logger.warning("Failed to copy manifest %s: %s", pm, exc)
+
+        if not manifest_copied:
+            logger.warning("No manifest.json found to publish to latest Phase 4 artifacts")
+
+        logger.info("Latest artifacts updated.")
+    except Exception as exc:  # pragma: no cover - best-effort publishing
+        logger.warning("Failed to publish latest Phase 4 artifacts: %s", exc)
 
 
 def _resolve_feature_frame(frame: pd.DataFrame) -> pd.DataFrame:
@@ -146,6 +191,13 @@ def main() -> bool:
 
         experiment_manager.finalize()
         logger.info("Phase 4 analysis completed successfully")
+
+        # Publish latest artifacts for downstream phases (best-effort)
+        try:
+            _publish_latest_artifacts(report_dir, artifact_paths["base"])
+        except Exception:
+            # _publish_latest_artifacts logs its own warnings; do not fail the run
+            logger.warning("Publishing latest Phase 4 artifacts encountered errors; continuing")
         return True
     except Exception as exc:  # pragma: no cover - runtime guard
         logger.error("Phase 4 analysis failed: %s", exc, exc_info=True)

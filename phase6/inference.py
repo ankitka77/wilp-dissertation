@@ -88,11 +88,20 @@ class InferenceEngine:
 
         if _pd is not None and isinstance(test_loader, _pd.DataFrame):
             records = test_loader.to_dict(orient="records")
+            METADATA_FIELDS = [
+                "sequence_id",
+                "block_id",
+                "source",
+                "dataset",
+                "session_id",
+                "timestamp",
+            ]
 
             def _iter_from_df():
                 batch_size = int(getattr(self._config, "batch_size", 32) or 32)
-                batch_inputs = []
-                batch_ids = []
+                batch_inputs: List[Any] = []
+                batch_ids: List[Any] = []
+                batch_meta: List[dict] = []
                 for rec in records:
                     if "inputs" in rec:
                         seq = rec.get("inputs")
@@ -107,12 +116,23 @@ class InferenceEngine:
                     # preserve an identifier if available
                     batch_ids.append(rec.get("id") or rec.get("index") or None)
 
+                    # Collect a small metadata mapping from a whitelist of fields
+                    # when they exist on the source record. Do NOT fabricate
+                    # missing fields; only copy what is present.
+                    meta = {k: rec.get(k) for k in METADATA_FIELDS if k in rec}
+                    batch_meta.append(meta)
+
                     if len(batch_inputs) >= batch_size:
-                        yield {"inputs": list(batch_inputs), "ids": list(batch_ids)}
+                        yield {
+                            "inputs": list(batch_inputs),
+                            "ids": list(batch_ids),
+                            "metadata": list(batch_meta),
+                        }
                         batch_inputs = []
                         batch_ids = []
+                        batch_meta = []
                 if batch_inputs:
-                    yield {"inputs": list(batch_inputs), "ids": list(batch_ids)}
+                    yield {"inputs": list(batch_inputs), "ids": list(batch_ids), "metadata": list(batch_meta)}
 
             iterator = _iter_from_df()
         else:
@@ -207,7 +227,22 @@ class InferenceEngine:
                     try:
                         entry["id"] = ids[idx]
                     except Exception:
-                        # Ignore missing ids for this index
+                        pass
+
+            # Propagate any whitelisted metadata fields collected from the
+            # source records. Only copy fields that were present; do not
+            # fabricate missing values.
+            if "metadata" in batch:
+                metas = batch.get("metadata")
+                if metas is not None:
+                    try:
+                        meta_entry = metas[idx]
+                        if isinstance(meta_entry, dict):
+                            for k, v in meta_entry.items():
+                                # Only set keys with non-None values
+                                if v is not None:
+                                    entry[k] = v
+                    except Exception:
                         pass
 
             out.append(entry)

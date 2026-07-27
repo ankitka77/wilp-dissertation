@@ -17,6 +17,16 @@ from phase6.config import Config
 
 logger = logging.getLogger("project")
 
+# Whitelist of metadata fields to preserve from predictions into decisions
+METADATA_FIELDS = [
+    "sequence_id",
+    "block_id",
+    "source",
+    "dataset",
+    "session_id",
+    "timestamp",
+]
+
 
 class DecisionEngineError(RuntimeError):
     """Raised when decision making cannot be completed."""
@@ -93,6 +103,19 @@ class DecisionEngine:
                 "reason": reason.value,
                 "confidence": asdict(conf),
             }
+
+            # Preserve anomaly_score explicitly to provide a standardized
+            # score field downstream (Phase 7 expects `anomaly_score`). Do
+            # not remove existing confidence information.
+            decision_entry["anomaly_score"] = float(anomaly_score)
+
+            # Propagate whitelisted metadata fields from the prediction
+            # (if present) into the decision entry. Do not fabricate any
+            # missing metadata.
+            if isinstance(pred, dict):
+                for m in METADATA_FIELDS:
+                    if m in pred and pred.get(m) is not None:
+                        decision_entry[m] = pred.get(m)
 
             # Preserve reference to original prediction id if present
             if "id" in pred:

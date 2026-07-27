@@ -18,6 +18,7 @@ import csv
 import json
 import logging
 import time
+import shutil
 
 import matplotlib
 matplotlib.use("Agg")
@@ -134,6 +135,14 @@ class ArtifactWriter:
             )
             self._write_json(manifest, manifest_obj)
             generated.append(manifest)
+
+            # Publish stable "latest" copies for Phase 7 artifacts. This is
+            # best-effort: failures are logged as warnings and do not fail
+            # artifact generation.
+            try:
+                self._publish_latest_artifacts(experiment_id=experiment_id, experiment_dir=base_dir)
+            except Exception as exc:  # pragma: no cover - defensive
+                logger.warning("Failed to publish latest Phase 7 artifacts: %s", exc)
 
         except Exception as exc:
             logger.error("Artifact generation failed: %s", exc)
@@ -459,6 +468,56 @@ class ArtifactWriter:
         }
         # preserve insertion order as defined above
         self._statistics = MappingProxyType(stats)
+
+    def _publish_latest_artifacts(self, *, experiment_id: str, experiment_dir: Path) -> None:
+        """Best-effort publish selected experiment outputs to
+        `artifacts/phase7/latest/`.
+
+        Rules:
+        - copy (do NOT move) the requested files using `shutil.copy2()` to
+          preserve timestamps
+        - overwrite existing files
+        - log WARNING if an expected file is missing or copy fails
+        - never raise an exception to the caller
+        """
+        try:
+            artifacts_root = Path(self._config.artifacts.root_dir)
+            latest_dir = artifacts_root / "latest"
+            latest_dir.mkdir(parents=True, exist_ok=True)
+
+            # files to copy: (source relative to experiment_dir, destination name)
+            files = [
+                (experiment_dir / "reports" / "fused_predictions.csv", latest_dir / "fused_predictions.csv"),
+                (experiment_dir / "reports" / "fusion_summary.json", latest_dir / "fusion_summary.json"),
+                (experiment_dir / "reports" / "source_coverage.json", latest_dir / "source_coverage.json"),
+                (experiment_dir / "manifests" / "phase7_manifest.json", latest_dir / "phase7_manifest.json"),
+            ]
+
+            for src, dst in files:
+                try:
+                    if not src.exists():
+                        logger.warning("Latest publish: missing file %s; skipping", str(src))
+                        continue
+                    # copy2 overwrites existing files by default
+                    shutil.copy2(str(src), str(dst))
+                except Exception as exc:  # pragma: no cover - defensive
+                    logger.warning("Failed to copy %s to %s: %s", str(src), str(dst), exc)
+
+            # Optionally write published_info.json
+            info = {
+                "published_on": datetime.now(timezone.utc).isoformat() + "Z",
+                "source_experiment": str(experiment_id),
+                "latest_directory": "artifacts/phase7/latest",
+            }
+            try:
+                info_path = latest_dir / "published_info.json"
+                with info_path.open("w", encoding="utf-8") as fh:
+                    json.dump(info, fh, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+            except Exception as exc:  # pragma: no cover - defensive
+                logger.warning("Failed to write published_info.json in %s: %s", str(latest_dir), exc)
+
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.warning("Unexpected error during Phase 7 latest publishing: %s", exc)
 
 
 __all__ = ["ArtifactWriter", "ArtifactWriterError", "ArtifactValidationError", "ArtifactWriteError"]

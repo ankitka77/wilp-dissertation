@@ -153,12 +153,32 @@ class FusionIngestion:
         by that factory for the numeric score (e.g. 'kpi_score' or 'log_score').
         """
         ts_col = _choose_column(df, [meta.get("timestamp_column"), "window_ts", "timestamp", "time", "ts"])  # type: ignore[arg-type]
-        id_col = _choose_column(df, [meta.get("id_column"), "KPI ID", "id", "source_record_id"])  # type: ignore[arg-type]
+        # Identifier column selection: keep KPI behaviour unchanged, but
+        # for LOG sources prefer DeepLog identifiers such as `sequence_id`
+        # and `source_record_id` before falling back to legacy names.
+        if str(error_label).strip().upper() == "LOG":
+            id_col = _choose_column(df, [meta.get("id_column"), "sequence_id", "source_record_id", "id", "KPI ID"])  # type: ignore[arg-type]
+        else:
+            id_col = _choose_column(df, [meta.get("id_column"), "KPI ID", "id", "source_record_id"])  # type: ignore[arg-type]
         end_col = _choose_column(df, [meta.get("end_timestamp_column"), "window_end_ts", "window_end", "end_ts"])  # type: ignore[arg-type]
         score_col = _choose_column(df, score_candidates)
 
+        # For KPI sources a timestamp column is mandatory. For LOG sources
+        # allow missing/NaN/empty timestamps and use a placeholder UTC
+        # timestamp instead (one per-source) as specified by requirements.
+        # Initialize placeholder timestamp variables for LOG sources so
+        # they are available whether or not a timestamp column exists.
+        placeholder_ts = None
+        placeholder_logged = False
+        if error_label.strip().upper() == "LOG":
+            placeholder_ts = datetime.now(timezone.utc)
+
         if ts_col is None:
-            raise IngestionValidationError(f"{error_label} source '{source_name}' missing timestamp column")
+            if error_label.strip().upper() == "LOG":
+                # allow missing timestamp column for LOG sources (use placeholder)
+                pass
+            else:
+                raise IngestionValidationError(f"{error_label} source '{source_name}' missing timestamp column")
         if id_col is None:
             raise IngestionValidationError(f"{error_label} source '{source_name}' missing source record id column")
 
@@ -166,11 +186,23 @@ class FusionIngestion:
         window_size = self.config.fusion_settings.window_size
 
         for idx, row in df.iterrows():
-            raw_ts = row[ts_col]
-            try:
-                ts = _parse_timestamp(raw_ts)
-            except Exception as exc:
-                raise IngestionValidationError(f"Invalid timestamp at row {idx} in source '{source_name}': {raw_ts}") from exc
+            # Read raw timestamp if a column was found; otherwise None
+            raw_ts = row[ts_col] if ts_col is not None else None
+
+            # LOG sources: use placeholder when timestamp is missing/NaN/empty
+            if error_label.strip().upper() == "LOG" and (
+                ts_col is None or pd.isna(raw_ts) or (isinstance(raw_ts, str) and str(raw_ts).strip() == "")
+            ):
+                # Log once per-source when a placeholder is first used
+                if not placeholder_logged:
+                    self._logger.debug("No timestamp available for LOG source '%s'; using placeholder UTC timestamp.", source_name)
+                    placeholder_logged = True
+                ts = placeholder_ts
+            else:
+                try:
+                    ts = _parse_timestamp(raw_ts)
+                except Exception as exc:
+                    raise IngestionValidationError(f"Invalid timestamp at row {idx} in source '{source_name}': {raw_ts}") from exc
 
             if end_col is not None and pd.notna(row[end_col]):
                 try:
@@ -193,12 +225,20 @@ class FusionIngestion:
                 if not math.isfinite(sc):
                     raise IngestionValidationError(f"{error_label} score must be finite at row {idx} in source '{source_name}': {sc}")
 
+            # Prefer `block_id` as the entity identifier when present (DeepLog),
+            # otherwise fall back to existing `entity_id` column support.
+            entity_val = None
+            if "block_id" in df.columns:
+                entity_val = _coerce_str(row.get("block_id"))
+            elif "entity_id" in df.columns:
+                entity_val = _coerce_str(row.get("entity_id"))
+
             kwargs = {
                 "window_ts": ts,
                 "window_end_ts": end_ts,
                 "source_record_id": source_id,
                 score_kw: sc,
-                "entity_id": _coerce_str(row.get("entity_id")) if "entity_id" in df.columns else None,
+                "entity_id": entity_val,
                 "source_metadata": meta,
             }
 

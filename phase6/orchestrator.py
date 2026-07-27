@@ -13,6 +13,10 @@ import logging
 
 from phase6.config import Config
 from phase6.types import ManifestInfo, JSONDict, ExperimentInfo
+import shutil
+from pathlib import Path
+import json
+from datetime import datetime
 
 logger = logging.getLogger("project")
 
@@ -140,7 +144,13 @@ class Orchestrator:
 
             # Persist predictions and manifest
             if "report_generator" in components and decision_result is not None:
-                components["report_generator"].write_predictions(decision_result)
+                # Capture predictions CSV path so it can be advertised in the
+                # final manifest for downstream phases to discover.
+                try:
+                    predictions_path = components["report_generator"].write_predictions(decision_result)
+                except Exception:
+                    self._logger.exception("Failed to write predictions CSV")
+                    predictions_path = None
 
             # Visualizations
             if "visualizer" in components and training_result is not None:
@@ -154,14 +164,23 @@ class Orchestrator:
                 except Exception:
                     self._logger.exception("Visualizer failed for prediction summary")
 
-            # Finalize and write manifest
-            manifest_path = self._finalize_and_write_manifest(exp_info, components, phase5_inputs, model_spec, training_result)
+            # Finalize and write manifest (pass predictions_path through)
+            manifest_path = self._finalize_and_write_manifest(
+                exp_info, components, phase5_inputs, model_spec, training_result, predictions_path
+            )
 
             # Finalize experiment record
             try:
                 self._experiment_manager.finalize_experiment(exp_info, {"manifest_path": manifest_path})
             except Exception:
                 self._logger.exception("ExperimentManager.finalize_experiment failed")
+
+            # Publish latest artifacts (best-effort; do not make this part of
+            # experiment success). Log warnings but do not fail the run.
+            try:
+                self._publish_latest_artifacts(exp_info)
+            except Exception:
+                self._logger.warning("Publishing latest Phase 6 artifacts failed; continuing")
 
             return manifest_path
 
@@ -248,7 +267,7 @@ class Orchestrator:
 
         return comps
 
-    def _finalize_and_write_manifest(self, experiment_info: ExperimentInfo, components: Dict[str, Any], phase5_inputs: Optional[Any], model_spec: Optional[Any], training_result: Optional[Any]) -> str:
+    def _finalize_and_write_manifest(self, experiment_info: ExperimentInfo, components: Dict[str, Any], phase5_inputs: Optional[Any], model_spec: Optional[Any], training_result: Optional[Any], predictions_path: Optional[str] = None) -> str:
         """Assemble a `ManifestInfo` object and persist it via the report generator.
 
         Returns the path to the written manifest JSON.
@@ -270,6 +289,12 @@ class Orchestrator:
                 # No formal API for artifact listing; keep minimal
                 artifacts["reports_path"] = getattr(experiment_info, "reports_path", None)
                 artifacts["plots_path"] = getattr(experiment_info, "plots_path", None)
+                # Include predictions CSV path when available (backward-compatible)
+                try:
+                    if predictions_path:
+                        artifacts["predictions_csv"] = str(predictions_path)
+                except Exception:
+                    self._logger.debug("No predictions path to include in manifest")
         except Exception as exc:
             self._logger.debug("Failed to gather artifacts info: %s", exc)
 
@@ -308,6 +333,59 @@ class Orchestrator:
 
         manifest_path = components["report_generator"].write_manifest(manifest)
         return manifest_path
+
+    def _publish_latest_artifacts(self, experiment_info: ExperimentInfo) -> None:
+        """Publish stable copies of key Phase 6 artifacts to artifacts/phase6/latest.
+
+        This function is best-effort: failures are logged and do not affect
+        experiment success. Uses `shutil.copy2` to preserve timestamps.
+        """
+        self._logger.info("Publishing latest Phase 6 artifacts...")
+        try:
+            # Resolve repository root (two levels up from this module)
+            repo_root = Path(__file__).resolve().parent.parent
+            latest_dir = repo_root / "artifacts" / "phase6" / "latest"
+            latest_dir.mkdir(parents=True, exist_ok=True)
+
+            # Sources inside the experiment
+            reports_dir = Path(experiment_info.reports_path)
+            manifests_dir = Path(experiment_info.manifests_path)
+
+            files_to_copy = [
+                (reports_dir / "predictions.csv", latest_dir / "predictions.csv"),
+                (manifests_dir / "manifest.json", latest_dir / "manifest.json"),
+                (reports_dir / "training_metrics.json", latest_dir / "training_metrics.json"),
+            ]
+
+            any_copied = False
+            for src, dst in files_to_copy:
+                try:
+                    if src.exists():
+                        shutil.copy2(src, dst)
+                        any_copied = True
+                    else:
+                        self._logger.debug("Source not found for publishing: %s", src)
+                except Exception as exc:
+                    self._logger.warning("Failed to copy %s to %s: %s", src, dst, exc)
+
+            if any_copied:
+                # Write a small published info file alongside the latest artifacts
+                info = {
+                    "published_on": datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
+                    "source_experiment": experiment_info.experiment_id,
+                    "latest_dir": str(latest_dir),
+                }
+                try:
+                    with (latest_dir / "published_info.json").open("w", encoding="utf-8") as fh:
+                        json.dump(info, fh, indent=2)
+                except Exception:
+                    self._logger.debug("Failed to write published_info.json in %s", latest_dir)
+
+                self._logger.info("Latest artifacts updated.")
+            else:
+                self._logger.warning("No Phase 6 artifacts were found to publish for experiment %s", experiment_info.experiment_id)
+        except Exception as exc:  # pragma: no cover - best-effort publishing
+            self._logger.warning("Failed to publish latest Phase 6 artifacts: %s", exc)
 
 
 __all__ = ["Orchestrator", "OrchestrationError"]

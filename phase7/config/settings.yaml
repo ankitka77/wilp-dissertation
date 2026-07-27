@@ -1,0 +1,35 @@
+fusion:
+  strategy: weighted_average
+  kpi_weight: 0.5
+  log_weight: 0.5
+  threshold: 0.6
+  window_size: 5m
+  normalization_strategy: min_max
+
+aggregation:
+  strategy: max
+
+logging:
+  level: INFO
+  enable_debug_artifacts: false
+
+artifacts:
+  root_dir: artifacts/phase7
+  retain_intermediate: true
+
+validation:
+  strict: true
+  allow_row_drops: false
+
+extensions:
+  sources:
+
+    phase4_kpi:
+      type: KPI
+      path: artifacts/phase4/latest/anomaly_predictions.csv
+      score_column: anomaly_score
+
+    phase6_log:
+      type: LOG
+      path: artifacts/phase6/latest/predictions.csv
+      score_column: anomaly_score

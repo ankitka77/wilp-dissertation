@@ -116,12 +116,12 @@ class VisualizationService:
         kpi_ids = sorted(df["KPI ID"].unique())
         data_by_kpi = [df[df["KPI ID"] == kpi_id]["value"].values for kpi_id in kpi_ids]
 
-        plt.boxplot(data_by_kpi, labels=kpi_ids, patch_artist=True)
+        plt.boxplot(data_by_kpi, patch_artist=True)
+        plt.xticks(range(1, len(kpi_ids) + 1), kpi_ids, rotation=45)
 
         plt.title(f"KPI Value Distribution by KPI ID ({dataset_type.capitalize()} Dataset)", fontsize=14, fontweight="bold")
         plt.xlabel("KPI ID", fontsize=12)
         plt.ylabel("KPI Value", fontsize=12)
-        plt.xticks(rotation=45)
         plt.grid(axis="y", alpha=0.3)
         plt.tight_layout()
 

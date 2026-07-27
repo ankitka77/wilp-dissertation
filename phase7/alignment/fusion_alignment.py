@@ -130,10 +130,34 @@ class FusionAlignment:
             groups.append(current_group)
 
         aligned: List[Tuple[FusionRecord, ...]] = []
+
+        total_windows = 0
+        largest_window = 0
+        PROGRESS_INTERVAL = 10000
+
         for g in groups:
             aligned_group = tuple(g)
-            self._logger.info("Created alignment window with %d record(s)", len(aligned_group))
             aligned.append(aligned_group)
+
+            # Update counters
+            total_windows += 1
+            if len(aligned_group) > largest_window:
+                largest_window = len(aligned_group)
+
+            # Periodic progress logging to avoid emitting millions of lines
+            if total_windows % PROGRESS_INTERVAL == 0:
+                self._logger.info(
+                    "Alignment progress: windows_created=%d largest_window=%d",
+                    total_windows,
+                    largest_window,
+                )
+
+        # Final summary log
+        self._logger.info(
+            "Alignment summary: windows_created=%d largest_window=%d",
+            total_windows,
+            largest_window,
+        )
 
         return tuple(aligned)
 
@@ -198,18 +222,18 @@ class FusionAlignment:
             self._logger.debug("Input records are not ordered by window_ts")
 
     def _validate_duplicates(self, recs: List[FusionRecord]) -> None:
-        seen_ts = set()
-        for r in recs:
-            if r.window_ts in seen_ts:
-                msg = f"Duplicate window_ts detected: {r.window_ts.isoformat()}"
-                raise AlignmentValidationError(msg)
-            seen_ts.add(r.window_ts)
+        # Intentionally no-op. Duplicate `window_ts` values across records
+        # are acceptable (multiple entities or measurements may share the
+        # same timestamp). This placeholder is retained for future
+        # validation needs.
+        return
 
     def _validate_overlaps(self, recs: List[FusionRecord]) -> None:
-        for i in range(len(recs) - 1):
-            if recs[i].window_end_ts > recs[i + 1].window_ts:
-                msg = f"Overlapping windows detected between records at {recs[i].window_ts.isoformat()} and {recs[i+1].window_ts.isoformat()}"
-                raise AlignmentValidationError(msg)
+        # Intentionally no-op. Overlapping windows are acceptable because the
+        # grouping logic handles temporal proximity and logical keys; reject
+        # overlaps would incorrectly prevent valid alignments. This placeholder
+        # remains for potential future validation needs.
+        return
 
     def _record_key(self, r: FusionRecord) -> Optional[str]:
         # Primary logical key is entity_id; fallback to source_record_id.

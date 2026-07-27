@@ -217,13 +217,29 @@ class ReportGenerator:
         are preserved when present.
         """
         rows: List[Dict[str, Any]] = []
-        fieldnames = ["index", "id", "is_anomaly", "reason", "confidence_score", "confidence_method"]
+        # Metadata whitelist to include as separate CSV columns when present.
+        METADATA_FIELDS = ["sequence_id", "block_id", "source", "dataset", "session_id", "timestamp"]
+
+        # Include standardized `timestamp` and `anomaly_score` columns when
+        # present in decisions. Preserve existing `confidence_score` and
+        # `confidence_method` columns for backward compatibility. Metadata
+        # columns come first for easier downstream processing.
+        fieldnames = list(METADATA_FIELDS) + ["index", "id", "is_anomaly", "anomaly_score", "reason", "confidence_score", "confidence_method"]
 
         for d in decisions:
             row: Dict[str, Any] = {}
             row["index"] = d.get("index")
             row["id"] = d.get("id", "")
+            # Copy metadata whitelist into CSV columns when present. Leave
+            # blank when absent for backward compatibility.
+            for m in METADATA_FIELDS:
+                row[m] = d.get(m, "")
+
             row["is_anomaly"] = bool(d.get("is_anomaly", False))
+            # anomaly_score provided explicitly by DecisionEngine (or
+            # originally by the inference engine); include as a top-level
+            # column to standardize across phases.
+            row["anomaly_score"] = d.get("anomaly_score", "")
             row["reason"] = d.get("reason", "")
 
             conf = d.get("confidence", {}) or {}
@@ -236,10 +252,9 @@ class ReportGenerator:
                 row["confidence_score"] = ""
                 row["confidence_method"] = str(conf)
 
-            # Preserve other potential keys as JSON strings
-            # e.g., topk, probs, anomaly_score
+            # Preserve other potential keys as JSON strings (e.g. topk, probs)
             extras = {}
-            for key in ("topk", "probs", "anomaly_score"):
+            for key in ("topk", "probs"):
                 if key in d:
                     extras[key] = d.get(key)
             if extras:
