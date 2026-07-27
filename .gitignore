@@ -9,8 +9,8 @@ __pycache__/
 htmlcov/
 
 # Datasets
-data/
-!data/README.md
+/data/
+!/data/README.md
 
 # Pytest
 .pytest_cache/
@@ -40,4 +40,4 @@ htmlcov/
 
 # Generated Artifacts
 # Keep directory structure only
-artifacts/
+/artifacts/
