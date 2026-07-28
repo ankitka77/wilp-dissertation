@@ -47,10 +47,18 @@ class KPIFeatureEngineer:
             raise ValueError("Input data must contain a 'KPI ID' column")
 
         work_frame = frame.copy()
+        # Preserve the original `timestamp` column values (epoch seconds).
+        # Create a temporary datetime column used only for feature engineering
+        # because pandas `to_datetime` requires `unit='s'` for epoch seconds.
         if "timestamp" in work_frame.columns:
-            work_frame["timestamp"] = pd.to_datetime(work_frame["timestamp"], errors="coerce")
+            work_frame["__timestamp_datetime__"] = pd.to_datetime(
+                work_frame["timestamp"], unit="s", errors="coerce"
+            )
 
-        work_frame = work_frame.sort_values(["KPI ID", "timestamp"], kind="mergesort")
+        # Sort by KPI ID and the helper datetime column to ensure correct
+        # temporal ordering while keeping the original timestamp values intact.
+        sort_cols = ["KPI ID", "__timestamp_datetime__"] if "__timestamp_datetime__" in work_frame.columns else ["KPI ID"]
+        work_frame = work_frame.sort_values(sort_cols, kind="mergesort")
         work_frame["__row_order__"] = np.arange(len(work_frame))
 
         engineered_groups: list[pd.DataFrame] = []
@@ -64,34 +72,44 @@ class KPIFeatureEngineer:
         engineered = self._sanitize_feature_dtypes(engineered)
         engineered = engineered.fillna(0.0)
         logger.info("Engineered %s KPI features", len(engineered))
+        # Remove temporary helper column before returning to preserve output
+        # schema: keep the original `timestamp` column only. The helper column
+        # exists solely to compute calendar/time-delta features with correct
+        # units and must not be persisted in exported CSVs.
+        if "__timestamp_datetime__" in engineered.columns:
+            engineered = engineered.drop(columns="__timestamp_datetime__")
         return engineered
 
     def _engineer_group(self, group: pd.DataFrame) -> pd.DataFrame:
         """Generate temporal features for one KPI stream."""
         group = group.copy()
-        group = group.sort_values("timestamp", kind="mergesort")
+        # Sort group by the helper datetime column to preserve correct temporal order
+        # while keeping the original `timestamp` column unchanged.
+        if "__timestamp_datetime__" in group.columns:
+            group = group.sort_values("__timestamp_datetime__", kind="mergesort")
+        else:
+            group = group.sort_values("timestamp", kind="mergesort")
 
-        if self.config.include_timestamp_features and "timestamp" in group.columns:
-            group["hour"] = group["timestamp"].dt.hour
-            group["day"] = group["timestamp"].dt.day
-            group["day_of_week"] = group["timestamp"].dt.dayofweek
-            group["month"] = group["timestamp"].dt.month
-            group["weekend"] = (group["timestamp"].dt.dayofweek >= 5).astype(int)
+        if self.config.include_timestamp_features and ("__timestamp_datetime__" in group.columns or "timestamp" in group.columns):
+            # Use the helper datetime column for all calendar/time features so
+            # that epoch-second timestamps are interpreted correctly.
+            dtcol = "__timestamp_datetime__" if "__timestamp_datetime__" in group.columns else "timestamp"
 
-            group["hour_sin"] = np.sin(
-                2 * np.pi * group["hour"] / 24
-            )
-            group["hour_cos"] = np.cos(
-                2 * np.pi * group["hour"] / 24
-            )
-            group["day_of_week_sin"] = np.sin(
-                2 * np.pi * group["day_of_week"] / 7
-            )
-            group["day_of_week_cos"] = np.cos(
-                2 * np.pi * group["day_of_week"] / 7
-            )
+            group["hour"] = group[dtcol].dt.hour
+            group["day"] = group[dtcol].dt.day
+            group["day_of_week"] = group[dtcol].dt.dayofweek
+            group["month"] = group[dtcol].dt.month
+            group["weekend"] = (group[dtcol].dt.dayofweek >= 5).astype(int)
 
-            time_diff = group["timestamp"].diff().dt.total_seconds()
+            group["hour_sin"] = np.sin(2 * np.pi * group["hour"] / 24)
+            group["hour_cos"] = np.cos(2 * np.pi * group["hour"] / 24)
+            group["day_of_week_sin"] = np.sin(2 * np.pi * group["day_of_week"] / 7)
+            group["day_of_week_cos"] = np.cos(2 * np.pi * group["day_of_week"] / 7)
+
+            # Compute time differences using the datetime helper to get seconds
+            # (original `timestamp` values are epoch seconds and must not be
+            # coerced directly without specifying unit='s').
+            time_diff = group[dtcol].diff().dt.total_seconds()
             group["time_diff_seconds"] = time_diff.fillna(0.0)
         else:
             group["time_diff_seconds"] = 0.0

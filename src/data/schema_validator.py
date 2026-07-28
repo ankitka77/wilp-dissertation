@@ -96,7 +96,7 @@ class SchemaValidator:
             return (
                 is_string_dtype(col)
                 or col.dtype == "object"
-                or (col.name == "timestamp" and is_datetime64_any_dtype(col))
+                or (col.name == "timestamp" and (is_datetime64_any_dtype(col) or is_integer_dtype(col)))
             )
         else:
             logger.warning(f"Unknown expected type: {expected_type}")

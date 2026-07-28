@@ -266,19 +266,57 @@ def _choose_column(df: pd.DataFrame, candidates: Iterable[Optional[str]]) -> Opt
     return None
 
 
+#def _parse_timestamp(value: Any) -> datetime:
+#    if isinstance(value, datetime):
+#        if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
+#            # assume naive timestamps are UTC
+#            return value.replace(tzinfo=timezone.utc)
+#        return value.astimezone(timezone.utc)
+#    if isinstance(value, str):
+#        if value.endswith("Z"):
+#            value = value[:-1] + "+00:00"
+#        dt = datetime.fromisoformat(value)
+#        if dt.tzinfo is None:
+#            dt = dt.replace(tzinfo=timezone.utc)
+#        return dt.astimezone(timezone.utc)
+#    raise ValueError("Unsupported timestamp value")
 def _parse_timestamp(value: Any) -> datetime:
+    """Parse a timestamp into a timezone-aware UTC datetime.
+
+    Supported input formats:
+      - datetime.datetime (naive or timezone-aware)
+      - Unix epoch integer/float (seconds since epoch)
+      - pandas nullable integer (Int64)
+      - ISO-8601 timestamp string
+    """
+
+    # Already a datetime
     if isinstance(value, datetime):
         if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
-            # assume naive timestamps are UTC
+            # Assume naive timestamps are UTC
             return value.replace(tzinfo=timezone.utc)
         return value.astimezone(timezone.utc)
+
+    # Unix epoch timestamp (Python int/float)
+    if isinstance(value, (int, float)):
+        return datetime.fromtimestamp(float(value), tz=timezone.utc)
+
+    # Pandas nullable integer (Int64) / NumPy integer types
+    if pd.api.types.is_integer(value):
+        return datetime.fromtimestamp(int(value), tz=timezone.utc)
+
+    # ISO-8601 string
     if isinstance(value, str):
         if value.endswith("Z"):
             value = value[:-1] + "+00:00"
+
         dt = datetime.fromisoformat(value)
+
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
+
         return dt.astimezone(timezone.utc)
+
     raise ValueError("Unsupported timestamp value")
 
 

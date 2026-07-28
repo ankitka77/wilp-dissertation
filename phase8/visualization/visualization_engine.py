@@ -66,7 +66,11 @@ class VisualizationEngine:
     def _plot_metric_bar(self, means: List[float], cis: List[Optional[float]], labels: List[str], title: str) -> bytes:
         fig, ax = plt.subplots(figsize=(6, 4))
         x = range(len(means))
-        ax.bar(x, means, yerr=[(m - (ci if ci is not None else m)) for m, ci in zip(means, cis)], capsize=5)
+        yerr = [
+            max(0.0, float(ci)) if ci is not None else 0.0
+            for ci in cis
+        ]
+        ax.bar(x, means, yerr=yerr, capsize=5)
         ax.set_xticks(x)
         ax.set_xticklabels(labels, rotation=45, ha="right")
         ax.set_ylabel("Score")

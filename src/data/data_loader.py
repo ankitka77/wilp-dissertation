@@ -64,11 +64,14 @@ class DataLoader:
 
         try:
             df = pd.read_csv(self.train_path, dtype={"KPI ID": str})
+            # Keep timestamp as Unix epoch seconds.
+            # Feature engineering performs the datetime conversion internally.
             if "timestamp" in df.columns:
-                df["timestamp"] = pd.to_datetime(
+                df["timestamp"] = pd.to_numeric(
                     df["timestamp"],
                     errors="coerce"
-                )
+                ).astype("Int64")
+
             logger.info(f"Successfully loaded {len(df)} training records")
 
             if df.empty:
@@ -105,11 +108,14 @@ class DataLoader:
 
         try:
             df = pd.read_csv(self.test_path, dtype={"KPI ID": str})
+            # Keep timestamp as Unix epoch seconds.
+            # Feature engineering performs the datetime conversion internally.
             if "timestamp" in df.columns:
-                df["timestamp"] = pd.to_datetime(
+                df["timestamp"] = pd.to_numeric(
                     df["timestamp"],
                     errors="coerce"
-                )
+                ).astype("Int64")
+
             logger.info(f"Successfully loaded {len(df)} test records")
 
             if df.empty:
