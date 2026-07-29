@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Artifact Record",
+  "type": "object",
+  "required": ["id", "phase", "type", "relative_path"],
+  "properties": {
+    "id": {"type": "string"},
+    "phase": {"type": "integer"},
+    "type": {"type": "string"},
+    "relative_path": {"type": "string"},
+    "resolved_path": {"type": ["string", "null"]},
+    "checksum": {"type": ["string", "null"]},
+    "size_bytes": {"type": ["integer", "null"]},
+    "last_modified": {"type": ["string", "null"]},
+    "metadata": {"type": ["object", "null"]},
+    "validation": {"type": ["object", "null"]}
+  }
+}

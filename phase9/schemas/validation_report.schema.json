@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Validation Report",
+  "type": "object",
+  "required": ["summary", "artifacts"],
+  "properties": {
+    "summary": {"type": "object"},
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["artifact_id", "status"],
+        "properties": {
+          "artifact_id": {"type": "string"},
+          "status": {"type": "string"},
+          "errors": {"type": ["array", "null"]},
+          "warnings": {"type": ["array", "null"]}
+        }
+      }
+    }
+  }
+}

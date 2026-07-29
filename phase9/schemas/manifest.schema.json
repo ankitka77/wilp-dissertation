@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Phase Manifest",
+  "type": "object",
+  "required": ["manifest_version", "phase", "artifacts", "generated_timestamp"],
+  "properties": {
+    "manifest_version": {"type": "string"},
+    "phase": {"type": "integer"},
+    "experiment_id": {"type": ["string", "null"]},
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "relative_path"],
+        "properties": {
+          "id": {"type": "string"},
+          "type": {"type": "string"},
+          "relative_path": {"type": "string"},
+          "checksum": {"type": ["string", "null"]},
+          "version": {"type": ["string", "null"]},
+          "metadata": {"type": ["object", "null"]}
+        }
+      }
+    },
+    "generated_timestamp": {"type": "string", "format": "date-time"},
+    "generator": {"type": ["object", "null"]}
+  }
+}

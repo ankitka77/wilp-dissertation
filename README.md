@@ -170,10 +170,17 @@ wilp-dissertation/
 │       ├── __init__.py
 │       └── plotter.py
 └── tests/
-    ├── conftest.py
-    └── unit/
-        ├── test_phase2_kpi_analysis.py
-        └── test_project_setup.py
+  ├── conftest.py
+  ├── phase9/
+  │   ├── test_config.py
+  │   ├── test_discovery_manifest.py
+  │   ├── test_exceptions.py
+  │   ├── test_logging.py
+  │   ├── test_schemas.py
+  │   └── test_utils.py
+  └── unit/
+    ├── test_phase2_kpi_analysis.py
+    └── test_project_setup.py
 ```
 
 ### Root Directory

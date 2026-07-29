@@ -72,6 +72,12 @@ Run only Phase 7 tests:
 pytest tests/phase7
 ```
 
+Run only Phase 9 tests:
+
+```powershell
+pytest tests/phase9
+```
+
 Run only the FusionConfig tests:
 
 ```powershell

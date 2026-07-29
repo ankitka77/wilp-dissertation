@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Reproducibility Manifest",
+  "type": "object",
+  "required": ["phase9_version", "generation_timestamp", "upstream_artifacts"],
+  "properties": {
+    "phase9_version": {"type": "string"},
+    "generation_timestamp": {"type": "string", "format": "date-time"},
+    "package_manifest": {"type": ["string", "null"]},
+    "upstream_artifacts": {
+      "type": "array",
+      "items": {"type": "object"}
+    }
+  }
+}

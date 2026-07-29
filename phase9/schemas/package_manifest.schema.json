@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Package Manifest",
+  "type": "object",
+  "required": ["package_name", "created_timestamp", "files"],
+  "properties": {
+    "package_name": {"type": "string"},
+    "created_timestamp": {"type": "string", "format": "date-time"},
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "size", "checksum"],
+        "properties": {
+          "path": {"type": "string"},
+          "size": {"type": "integer"},
+          "checksum": {"type": "string"}
+        }
+      }
+    }
+  }
+}

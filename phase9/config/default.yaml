@@ -1,0 +1,23 @@
+# Phase 9 default configuration
+output:
+  artifacts_root: artifacts/phase9/latest
+  staging_dir: phase9/packaging/staging
+
+discovery:
+  phases: [2,3,4,5,6,7,8]
+  manifest_filename: manifest.json
+
+logging:
+  level: INFO
+  console: true
+  file: true
+  file_path: phase9/logs/phase9.log
+  max_bytes: 10485760  # 10 MB
+  backup_count: 5
+
+features:
+  enable_figure_generation: true
+  include_optional_artifacts: false
+
+policies:
+  duplicate_resolution: prefer-manifest
